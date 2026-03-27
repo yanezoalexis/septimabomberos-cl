@@ -100,50 +100,88 @@ export const vehicleTypes = [
   "Otros",
 ];
 
-export const cbvmEmergencyTypes = [
-  { value: "INCENDIO_ESTRUCTURAL", label: "Incendio Estructural" },
-  { value: "INCENDIO_FORESTAL", label: "Incendio Forestal" },
-  { value: "RESCATE", label: "Rescate" },
-  { value: "SALUD", label: "Salud" },
-  { value: "MATERIALES_PELIGROSOS", label: "Materiales Peligrosos" },
-  { value: "AUXILIO", label: "Auxilio" },
-  { value: "SERVICIO_VARIOS", label: "Servicio Varios" },
-  { value: "CAPACITACION", label: "Capacitación" },
-  { value: "REUNION", label: "Reunión" },
-  { value: "PRACTICA", label: "Práctica" },
+export const emergencyCategories = [
+  { value: "1", label: "1 - Emergencias Estructurales" },
+  { value: "2", label: "2 - Emergencias Forestales" },
+  { value: "3", label: "3 - Emergencias Vehiculares" },
+  { value: "4", label: "4 - Materiales Peligrosos" },
+  { value: "5", label: "5 - Rescates Vehiculares" },
+  { value: "6", label: "6 - Rescates" },
+  { value: "7", label: "7 - Acuartelamiento" },
+  { value: "8", label: "8 - Apoyo a Otros Cuerpos" },
+  { value: "9", label: "9 - Emergencia Industrial" },
+  { value: "10", label: "10 - Otros Servicios" },
+  { value: "11", label: "11 - Escombros/Remoción" },
+  { value: "12", label: "12 - Academia General" },
+  { value: "13", label: "13 - Simulacro" },
+  { value: "14", label: "14 - Riesgo Eléctrico" },
+  { value: "15", label: "15 - Accidente Aéreo" },
+  { value: "16", label: "16 - Servicios Internos" },
 ];
 
-export const incidentKeys = [
-  { category: "1", value: "1-1", label: "1-1 Casa Habitación o Locales Comerciales" },
-  { category: "1", value: "1-2", label: "1-2 Edificios o Edificaciones Antiguas" },
-  { category: "1", value: "1-3", label: "1-3 Estructuras Complejas" },
-  { category: "2", value: "2-1", label: "2-1 Emergencia Forestal" },
-  { category: "3", value: "3-1", label: "3-1 Emergencia Vehicular Simple" },
-  { category: "3", value: "3-2", label: "3-2 Emergencia Vehicular Compleja" },
-  { category: "4", value: "4-1", label: "4-1 Escape de Gas Simple" },
-  { category: "4", value: "4-2", label: "4-2 Escape de Gas Compleja" },
-  { category: "4", value: "4-3", label: "4-3 Emergencia de Materiales Peligrosos" },
-  { category: "4", value: "4-4", label: "4-4 Emergencia Compleja de Mat. Peligrosos" },
-  { category: "5", value: "5-1", label: "5-1 Rescate Vehicular Liviano" },
-  { category: "5", value: "5-2", label: "5-2 Rescate Vehicular Pesado" },
-  { category: "6", value: "6-1", label: "6-1 Rescate en Altura" },
-  { category: "6", value: "6-2", label: "6-2 Rescate Técnico" },
-  { category: "6", value: "6-3", label: "6-3 Rescate de Emergencia por Encierro" },
-  { category: "6", value: "6-4", label: "6-4 Rescate Agreste" },
-  { category: "6", value: "6-5", label: "6-5 Otros Rescates de Emergencia" },
-  { category: "6", value: "6-6", label: "6-6 Rescates Acuáticos" },
-  { category: "7", value: "7-1", label: "7-1 Acuartelamiento General" },
-  { category: "7", value: "7-2", label: "7-2 Acuartelamiento Grupo Específico" },
-  { category: "8", value: "8-1", label: "8-1 Apoyo a Otros Cuerpos de Bomberos" },
-  { category: "9", value: "9-1", label: "9-1 Emergencia Industrial" },
-  { category: "10", value: "10-1", label: "10-1 Llamado a Otros Servicios" },
-  { category: "11", value: "11-1", label: "11-1 Llamado a Escombros/Remoción" },
-  { category: "12", value: "12-1", label: "12-1 Academia General" },
-  { category: "13", value: "13-1", label: "13-1 Simulacro" },
-  { category: "14", value: "14-1", label: "14-1 Emergencia por Riesgo Eléctrico" },
-  { category: "15", value: "15-1", label: "15-1 Emergencia por Accidente Aéreo" },
-  { category: "16", value: "16-1", label: "16-1 Servicios Internos" },
-];
+export const incidentKeys: Record<string, { value: string; label: string }[]> = {
+  "1": [
+    { value: "1-1", label: "1-1 Casa Habitación o Locales Comerciales" },
+    { value: "1-2", label: "1-2 Edificios o Edificaciones Antiguas" },
+    { value: "1-3", label: "1-3 Estructuras Complejas" },
+  ],
+  "2": [
+    { value: "2-1", label: "2-1 Emergencia Forestal" },
+  ],
+  "3": [
+    { value: "3-1", label: "3-1 Emergencia Vehicular Simple" },
+    { value: "3-2", label: "3-2 Emergencia Vehicular Compleja" },
+  ],
+  "4": [
+    { value: "4-1", label: "4-1 Escape de Gas Simple" },
+    { value: "4-2", label: "4-2 Escape de Gas Compleja" },
+    { value: "4-3", label: "4-3 Emergencia de Materiales Peligrosos" },
+    { value: "4-4", label: "4-4 Emergencia Compleja de Mat. Peligrosos" },
+  ],
+  "5": [
+    { value: "5-1", label: "5-1 Rescate Vehicular Liviano" },
+    { value: "5-2", label: "5-2 Rescate Vehicular Pesado" },
+  ],
+  "6": [
+    { value: "6-1", label: "6-1 Rescate en Altura" },
+    { value: "6-2", label: "6-2 Rescate Técnico" },
+    { value: "6-3", label: "6-3 Rescate de Emergencia por Encierro" },
+    { value: "6-4", label: "6-4 Rescate Agreste" },
+    { value: "6-5", label: "6-5 Otros Rescates de Emergencia" },
+    { value: "6-6", label: "6-6 Rescates Acuáticos" },
+  ],
+  "7": [
+    { value: "7-1", label: "7-1 Acuartelamiento General" },
+    { value: "7-2", label: "7-2 Acuartelamiento Grupo Específico" },
+  ],
+  "8": [
+    { value: "8-1", label: "8-1 Apoyo a Otros Cuerpos de Bomberos" },
+  ],
+  "9": [
+    { value: "9-1", label: "9-1 Emergencia Industrial" },
+  ],
+  "10": [
+    { value: "10-1", label: "10-1 Llamado a Otros Servicios" },
+  ],
+  "11": [
+    { value: "11-1", label: "11-1 Llamado a Escombros/Remoción" },
+  ],
+  "12": [
+    { value: "12-1", label: "12-1 Academia General" },
+  ],
+  "13": [
+    { value: "13-1", label: "13-1 Simulacro" },
+  ],
+  "14": [
+    { value: "14-1", label: "14-1 Emergencia por Riesgo Eléctrico" },
+  ],
+  "15": [
+    { value: "15-1", label: "15-1 Emergencia por Accidente Aéreo" },
+  ],
+  "16": [
+    { value: "16-1", label: "16-1 Servicios Internos" },
+  ],
+};
 
 export const attendanceCodes = [
   { value: "P", label: "Presente", color: "blue", bg: "bg-blue-500", description: "Presente" },

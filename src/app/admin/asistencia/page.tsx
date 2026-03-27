@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, CalendarDays, Download, ChevronLeft, ChevronRight, Search, AlertCircle, Users } from "lucide-react";
-import { cbvmEmergencyTypes, attendanceCodes, septimaBombers, incidentKeys } from "@/lib/utils";
+import { Plus, CalendarDays, Download, Search, AlertCircle } from "lucide-react";
+import { emergencyCategories, incidentKeys, attendanceCodes, septimaBombers } from "@/lib/utils";
 
 interface IncidentRecord {
   id: string;
@@ -27,11 +27,11 @@ interface AttendanceRecord {
 
 interface FormData {
   date: string;
-  type: string;
+  category: string;
+  clave: string;
   description: string;
   horaSalida: string;
   horaLlegada: string;
-  clave: string;
   lugar: string;
   bomberId: string;
   code: string;
@@ -66,7 +66,7 @@ export default function AsistenciaPage() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>(mockAttendance);
   const [formData, setFormData] = useState<FormData>({
     date: "",
-    type: "",
+    category: "",
     description: "",
     horaSalida: "",
     horaLlegada: "",
@@ -86,6 +86,10 @@ export default function AsistenciaPage() {
   }, [incidentFilter, incidents]);
 
   const currentIncident = incidents.find(i => i.id === selectedIncident);
+  
+  const subKeys = useMemo(() => {
+    return formData.category ? incidentKeys[formData.category] || [] : [];
+  }, [formData.category]);
   
   const currentAttendance = useMemo(() => {
     if (!selectedIncident) return [];
@@ -113,12 +117,16 @@ export default function AsistenciaPage() {
     setFormData({ ...formData, code });
   };
 
+  const handleCategoryChange = (category: string) => {
+    setFormData({ ...formData, category, clave: "" });
+  };
+
   const handleAddIncident = (e: React.FormEvent) => {
     e.preventDefault();
     const newIncident: IncidentRecord = {
       id: Date.now().toString(),
       date: formData.date || new Date().toISOString().split("T")[0],
-      type: formData.type,
+      type: formData.category,
       description: formData.description,
       horaSalida: formData.horaSalida,
       horaLlegada: formData.horaLlegada,
@@ -175,7 +183,7 @@ export default function AsistenciaPage() {
   const resetForm = () => {
     setFormData({
       date: "",
-      type: "",
+      category: "",
       description: "",
       horaSalida: "",
       horaLlegada: "",
@@ -189,22 +197,28 @@ export default function AsistenciaPage() {
   };
 
   const getEmergencyTypeLabel = (type: string) => {
-    const emergency = cbvmEmergencyTypes.find(e => e.value === type);
-    return emergency?.label || type;
+    const category = emergencyCategories.find(e => e.value === type);
+    return category?.label || type;
   };
 
   const getEmergencyTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      INCENDIO_ESTRUCTURAL: "bg-red-500/20 text-red-400",
-      INCENDIO_FORESTAL: "bg-orange-500/20 text-orange-400",
-      RESCATE: "bg-blue-500/20 text-blue-400",
-      SALUD: "bg-green-500/20 text-green-400",
-      MATERIALES_PELIGROSOS: "bg-yellow-500/20 text-yellow-400",
-      AUXILIO: "bg-cyan-500/20 text-cyan-400",
-      SERVICIO_VARIOS: "bg-gray-500/20 text-gray-400",
-      CAPACITACION: "bg-purple-500/20 text-purple-400",
-      REUNION: "bg-indigo-500/20 text-indigo-400",
-      PRACTICA: "bg-teal-500/20 text-teal-400",
+      "1": "bg-red-500/20 text-red-400",
+      "2": "bg-green-500/20 text-green-400",
+      "3": "bg-blue-500/20 text-blue-400",
+      "4": "bg-yellow-500/20 text-yellow-400",
+      "5": "bg-orange-500/20 text-orange-400",
+      "6": "bg-purple-500/20 text-purple-400",
+      "7": "bg-gray-500/20 text-gray-400",
+      "8": "bg-cyan-500/20 text-cyan-400",
+      "9": "bg-pink-500/20 text-pink-400",
+      "10": "bg-indigo-500/20 text-indigo-400",
+      "11": "bg-amber-500/20 text-amber-400",
+      "12": "bg-teal-500/20 text-teal-400",
+      "13": "bg-rose-500/20 text-rose-400",
+      "14": "bg-yellow-600/20 text-yellow-600",
+      "15": "bg-sky-500/20 text-sky-400",
+      "16": "bg-slate-500/20 text-slate-400",
     };
     return colors[type] || "bg-gray-500/20 text-gray-400";
   };
@@ -475,19 +489,36 @@ export default function AsistenciaPage() {
                       className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Tipo de Emergencia *</label>
-                    <select 
-                      required 
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-                    >
-                      <option value="">Seleccionar tipo...</option>
-                      {cbvmEmergencyTypes.map((type) => (
-                        <option key={type.value} value={type.value}>{type.label}</option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Categoría *</label>
+                      <select 
+                        required
+                        value={formData.category}
+                        onChange={(e) => handleCategoryChange(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                      >
+                        <option value="">Seleccionar categoría...</option>
+                        {emergencyCategories.map((cat) => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Subclave *</label>
+                      <select 
+                        required
+                        value={formData.clave}
+                        onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
+                        className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                        disabled={!formData.category}
+                      >
+                        <option value="">Seleccionar subclave...</option>
+                        {subKeys.map((key) => (
+                          <option key={key.value} value={key.value}>{key.label}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
@@ -519,21 +550,6 @@ export default function AsistenciaPage() {
                         className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Clave</label>
-                    <select 
-                      value={formData.clave}
-                      onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-                    >
-                      <option value="">Seleccionar clave...</option>
-                      {incidentKeys.map((key) => (
-                        <option key={key.value} value={key.value}>
-                          {key.label}
-                        </option>
-                      ))}
-                    </select>
                   </div>
                 </>
               ) : (
