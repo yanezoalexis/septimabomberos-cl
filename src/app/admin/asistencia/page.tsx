@@ -447,29 +447,51 @@ export default function AsistenciaPage() {
               <div className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-white font-medium">Control de Asistencia</h3>
-                  <button
-                    onClick={() => openAddModal("attendance")}
-                    className="flex items-center gap-1 text-sm text-[#C41E3A] hover:text-[#A01830] transition-colors"
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const bomber = septimaBombers.find(b => b.id === e.target.value);
+                        if (bomber && selectedIncident) {
+                          const exists = attendance.some(a => a.bomberId === bomber.id && a.incidentId === selectedIncident);
+                          if (!exists) {
+                            setAttendance([...attendance, {
+                              id: Date.now().toString(),
+                              bomberId: bomber.id,
+                              bomberNro: bomber.nro,
+                              bomberName: bomber.name,
+                              incidentId: selectedIncident,
+                              code: "P",
+                              notes: null,
+                            }]);
+                          }
+                        }
+                        e.target.value = "";
+                      }
+                    }}
+                    className="bg-[#0F0F0F] border border-[#3A3A3A] text-white text-sm rounded px-3 py-1.5 focus:outline-none focus:border-[#C41E3A]"
                   >
-                    <Plus className="w-4 h-4" />
-                    Agregar Bombero
-                  </button>
+                    <option value="">+ Agregar Bombero</option>
+                    {septimaBombers
+                      .filter(b => !attendance.some(a => a.bomberId === b.id && a.incidentId === selectedIncident))
+                      .map(b => (
+                        <option key={b.id} value={b.id}>{b.nro} - {b.name}</option>
+                      ))}
+                  </select>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-[#2A2A2A]">
-                        <th className="text-left text-gray-400 text-sm font-medium py-2 px-3">Grado</th>
+                        <th className="text-left text-gray-400 text-sm font-medium py-2 px-3">N°</th>
                         <th className="text-left text-gray-400 text-sm font-medium py-2 px-3">Bombero</th>
                         <th className="text-center text-gray-400 text-sm font-medium py-2 px-3">Código</th>
                         <th className="text-left text-gray-400 text-sm font-medium py-2 px-3">Observaciones</th>
-                        <th className="text-right text-gray-400 text-sm font-medium py-2 px-3">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {septimaBombers.map((bomber) => {
-                        const attendance = currentAttendance.find(
+                        const bomberAttendance = currentAttendance.find(
                           a => a.bomberId === bomber.id
                         );
                         return (
@@ -477,24 +499,42 @@ export default function AsistenciaPage() {
                             <td className="py-2 px-3 text-gray-400 text-sm">{bomber.nro}</td>
                             <td className="py-2 px-3 text-white text-sm font-medium">{bomber.name}</td>
                             <td className="py-2 px-3 text-center">
-                              {attendance ? (
-                                <span className={`px-3 py-1 rounded font-bold ${getCodeColor(attendance.code)}`}>
-                                  {attendance.code}
-                                </span>
-                              ) : (
-                                <span className="text-gray-600">-</span>
-                              )}
-                            </td>
-                            <td className="py-2 px-3 text-gray-400 text-sm">
-                              {attendance?.notes || <span className="text-gray-600">-</span>}
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <button 
-                                onClick={() => attendance && handleEditAttendance(attendance)}
-                                className="text-gray-500 hover:text-white text-sm transition-colors"
+                              <select
+                                value={bomberAttendance?.code || ""}
+                                onChange={(e) => {
+                                  if (bomberAttendance) {
+                                    if (e.target.value === "") {
+                                      setAttendance(attendance.filter(a => a.id !== bomberAttendance.id));
+                                    } else {
+                                      setAttendance(attendance.map(a => 
+                                        a.id === bomberAttendance.id ? { ...a, code: e.target.value } : a
+                                      ));
+                                    }
+                                  }
+                                }}
+                                className={`px-3 py-1 rounded font-bold border cursor-pointer focus:outline-none ${getCodeColor(bomberAttendance?.code || "")}`}
                               >
-                                Editar
-                              </button>
+                                <option value="">-</option>
+                                <option value="P">P</option>
+                                <option value="PA">PA</option>
+                                <option value="A">A</option>
+                                <option value="L">L</option>
+                              </select>
+                            </td>
+                            <td className="py-2 px-3">
+                              <input
+                                type="text"
+                                value={bomberAttendance?.notes || ""}
+                                onChange={(e) => {
+                                  if (bomberAttendance) {
+                                    setAttendance(attendance.map(a => 
+                                      a.id === bomberAttendance.id ? { ...a, notes: e.target.value || null } : a
+                                    ));
+                                  }
+                                }}
+                                placeholder="-"
+                                className="w-full bg-transparent text-gray-400 text-sm focus:outline-none focus:bg-[#0F0F0F] px-1 py-0.5 rounded"
+                              />
                             </td>
                           </tr>
                         );
