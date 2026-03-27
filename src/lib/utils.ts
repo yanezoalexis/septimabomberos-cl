@@ -138,8 +138,12 @@ export const incidentKeys = [
   { category: "4", value: "4-11", label: "4-11 Otro" },
   { category: "5", value: "5-1", label: "5-1 Rescate Vehicular Liviano" },
   { category: "5", value: "5-2", label: "5-2 Rescate Vehicular Pesado" },
-  { category: "6", value: "6-1", label: "6-1 Apoyo Externo" },
-  { category: "6", value: "6-2", label: "6-2 Apoyo Interno" },
+  { category: "6", value: "6-1", label: "6-1 Rescate en Altura" },
+  { category: "6", value: "6-2", label: "6-2 Rescate Técnico" },
+  { category: "6", value: "6-3", label: "6-3 Rescate de Emergencia por Encierro" },
+  { category: "6", value: "6-4", label: "6-4 Rescate Agreste" },
+  { category: "6", value: "6-5", label: "6-5 Otros Rescates de Emergencia" },
+  { category: "6", value: "6-6", label: "6-6 Rescates Acuáticos" },
 ];
 
 export const attendanceCodes = [
