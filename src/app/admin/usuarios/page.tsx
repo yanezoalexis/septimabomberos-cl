@@ -58,27 +58,81 @@ export default function UsuariosPage() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const role = formData.get("role") as string;
+    const grado = formData.get("grado") as string;
+    const password = formData.get("password") as string;
     
     if (editingUser) {
       setUsers(users.map((u) => (u.id === editingUser.id ? { 
         ...editingUser,
-        name: formData.get("name") as string,
-        email: formData.get("email") as string,
-        role: formData.get("role") as string,
-        grado: formData.get("grado") as string,
+        name,
+        email,
+        role,
+        grado,
       } : u)));
     } else {
       const newUser: UserData = {
         id: Date.now().toString(),
-        name: formData.get("name") as string,
-        email: formData.get("email") as string,
-        role: formData.get("role") as string,
-        grado: formData.get("grado") as string,
+        name,
+        email,
+        role,
+        grado,
         isActive: true,
         createdAt: new Date().toISOString().split("T")[0],
         lastLogin: null,
       };
       setUsers([...users, newUser]);
+      
+      // Enviar correo de bienvenida
+      fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: `Bienvenido - ${name}`,
+          module: "Gestión de Usuarios",
+          action: "create",
+          details: `
+            <p>Se ha creado una cuenta para usted.</p>
+            <br>
+            <strong>Nombre:</strong> ${name}<br>
+            <strong>Grado:</strong> ${grado}<br>
+            <strong>Rol:</strong> ${ROLES.find(r => r.value === role)?.label || role}<br>
+            <strong>Email:</strong> ${email}<br>
+            <br>
+            <strong>Credenciales de acceso:</strong><br>
+            <strong>URL:</strong> https://septimabomberos-cl.vercel.app/auth/login<br>
+            <strong>Usuario:</strong> ${email}<br>
+            <strong>Contraseña:</strong> ${password || " Deberá configurar su contraseña"}
+          `,
+        }),
+      });
+      
+      // Enviar también al correo del usuario
+      fetch("/api/notifications/send-to-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: email,
+          subject: `Bienvenido a BomberOS - ${name}`,
+          details: `
+            <p>Estimado/a ${name},</p>
+            <p>Se le ha creado una cuenta en el sistema BomberOS de la Séptima Compañía de Bomberos.</p>
+            <br>
+            <strong>Datos de su cuenta:</strong><br>
+            <strong>Grado:</strong> ${grado}<br>
+            <strong>Rol:</strong> ${ROLES.find(r => r.value === role)?.label || role}<br>
+            <br>
+            <strong>Para acceder:</strong><br>
+            <strong>URL:</strong> https://septimabomberos-cl.vercel.app/auth/login<br>
+            <strong>Usuario:</strong> ${email}<br>
+            <strong>Contraseña:</strong> ${password || " Deberá configurar su contraseña al primer ingreso"}
+            <br><br>
+            <p>Saludos cordiales,<br>Séptima Compañía de Bomberos Viña del Mar</p>
+          `,
+        }),
+      });
     }
     setIsModalOpen(false);
     setEditingUser(null);
