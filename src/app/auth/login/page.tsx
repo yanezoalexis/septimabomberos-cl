@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Truck, KeyRound } from "lucide-react";
@@ -10,6 +9,13 @@ export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const session = localStorage.getItem("bomberos_session");
+    if (session) {
+      router.push("/admin");
+    }
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,19 +27,25 @@ export default function LoginPage() {
     const password = formData.get("password") as string;
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      const storedUsers = localStorage.getItem("bomb_user_data");
+      const parsedUsers = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      const res = await fetch("/api/auth/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, storedUsers: parsedUsers }),
       });
 
-      if (result?.error) {
-        setError("Email o contraseña incorrectos");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Email o contraseña incorrectos");
         setIsLoading(false);
-      } else {
-        router.push("/admin");
-        router.refresh();
+        return;
       }
+
+      localStorage.setItem("bomberos_session", JSON.stringify(data.user));
+      router.push("/admin");
     } catch {
       setError("Error al iniciar sesión");
       setIsLoading(false);

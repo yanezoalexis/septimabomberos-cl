@@ -20,7 +20,6 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { signOut } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -114,7 +113,10 @@ export function AdminSidebar() {
 
           <div className="p-2 border-t border-[#2A2A2A]">
             <button
-              onClick={() => signOut({ callbackUrl: "/auth/login" })}
+              onClick={() => {
+                localStorage.removeItem("bomberos_session");
+                window.location.href = "/auth/login";
+              }}
               className={cn(
                 "flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-gray-400 hover:bg-[#1A1A1A] hover:text-white transition-colors",
                 collapsed && "justify-center px-2"

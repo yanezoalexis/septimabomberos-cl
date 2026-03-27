@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, X, Shield, User, Mail } from "lucide-react";
 
 interface UserData {
@@ -12,7 +12,10 @@ interface UserData {
   isActive: boolean;
   createdAt: string;
   lastLogin: string | null;
+  password?: string;
 }
+
+const STORAGE_KEY = "bomb_user_data";
 
 const GRADOS = [
   "Comandante",
@@ -45,6 +48,22 @@ export default function UsuariosPage() {
   const [filterRole, setFilterRole] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        setUsers(JSON.parse(stored));
+      } catch {
+        setUsers([]);
+      }
+    }
+  }, []);
+
+  const saveUsers = (newUsers: UserData[]) => {
+    setUsers(newUsers);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUsers));
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -65,25 +84,32 @@ export default function UsuariosPage() {
     const password = formData.get("password") as string;
     
     if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? { 
+      const updatedUsers = users.map((u) => (u.id === editingUser.id ? { 
         ...editingUser,
         name,
         email,
         role,
         grado,
-      } : u)));
+        ...(password ? { password } : {}),
+      } : u));
+      saveUsers(updatedUsers);
     } else {
+      if (!password) {
+        alert("La contraseña es requerida para nuevos usuarios");
+        return;
+      }
       const newUser: UserData = {
         id: Date.now().toString(),
         name,
         email,
         role,
         grado,
+        password,
         isActive: true,
         createdAt: new Date().toISOString().split("T")[0],
         lastLogin: null,
       };
-      setUsers([...users, newUser]);
+      saveUsers([...users, newUser]);
       
       // Enviar correo de bienvenida
       fetch("/api/notifications", {
@@ -139,12 +165,12 @@ export default function UsuariosPage() {
   }
 
   function handleDelete(id: string) {
-    setUsers(users.filter((u) => u.id !== id));
+    saveUsers(users.filter((u) => u.id !== id));
     setDeleteConfirm(null);
   }
 
   function toggleActive(id: string) {
-    setUsers(users.map((u) => (u.id === id ? { ...u, isActive: !u.isActive } : u)));
+    saveUsers(users.map((u) => (u.id === id ? { ...u, isActive: !u.isActive } : u)));
   }
 
   return (
