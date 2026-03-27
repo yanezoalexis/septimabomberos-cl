@@ -1,0 +1,16 @@
+{
+  "name": "Séptima Compañía CBVM",
+  "short_name": "7ma CBVM",
+  "description": "Séptima Compañía de Bomberos de Viña del Mar. Especialidad en Rescate en Desnivel.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#C41E3A",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
