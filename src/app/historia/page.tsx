@@ -1,3 +1,8 @@
+import { 
+  Flame, Droplets, PartyPopper, Wind, MapPin, Building,
+  Award, Handshake, Scroll, Flag, Flashlight
+} from "lucide-react"
+
 export const metadata = {
   title: "Historia | Séptima Compañía de Bomberos Viña del Mar",
   description: "Historia de la Séptima Compañía de Bomberos de Viña del Mar, fundada el 21 de septiembre de 1971.",
@@ -205,7 +210,7 @@ export default function Historia() {
           </section>
 
           {/* Acta de Fundación Completa */}
-          <section className="bg-[#1A1A1A] text-white rounded-2xl overflow-hidden">
+          <section className="bg-gris-carbon text-white rounded-2xl overflow-hidden dark:bg-black">
             <div className="bg-rojo-bombero p-6">
               <h2 className="font-heading text-2xl font-bold text-center text-amarillo-seguridad">
                 ACTA DE FUNDACIÓN
@@ -306,26 +311,26 @@ export default function Historia() {
               Primeros Obsequios Recibidos
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gris-claro rounded-lg p-6 text-center">
+              <div className="bg-gris-claro rounded-lg p-6 text-center dark:bg-gray-800">
                 <div className="w-16 h-16 bg-rojo-bombero/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">📜</span>
+                  <Scroll className="w-8 h-8 text-rojo-bombero" aria-hidden="true" />
                 </div>
                 <h3 className="font-heading font-bold text-rojo-oscuro mb-2">Pergamino Recordatorio</h3>
-                <p className="text-gris-medio text-sm">Entregado por la Comunidad de Viña del Mar Alto, a través del Señor Claudio Ortiz Urzúa</p>
+                <p className="text-gris-medio text-sm dark:text-gray-400">Entregado por la Comunidad de Viña del Mar Alto, a través del Señor Claudio Ortiz Urzúa</p>
               </div>
-              <div className="bg-gris-claro rounded-lg p-6 text-center">
+              <div className="bg-gris-claro rounded-lg p-6 text-center dark:bg-gray-800">
                 <div className="w-16 h-16 bg-rojo-bombero/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🚩</span>
+                  <Flag className="w-8 h-8 text-rojo-bombero" aria-hidden="true" />
                 </div>
                 <h3 className="font-heading font-bold text-rojo-oscuro mb-2">Nuevo Estandarte</h3>
-                <p className="text-gris-medio text-sm">Entregado por el Director de la Cuarta Compañía, Señor Julio Rubio Gómez</p>
+                <p className="text-gris-medio text-sm dark:text-gray-400">Entregado por el Director de la Cuarta Compañía, Señor Julio Rubio Gómez</p>
               </div>
-              <div className="bg-gris-claro rounded-lg p-6 text-center">
+              <div className="bg-gris-claro rounded-lg p-6 text-center dark:bg-gray-800">
                 <div className="w-16 h-16 bg-rojo-bombero/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🔦</span>
+                  <Flashlight className="w-8 h-8 text-rojo-bombero" aria-hidden="true" />
                 </div>
                 <h3 className="font-heading font-bold text-rojo-oscuro mb-2">Linterna Simbólica</h3>
-                <p className="text-gris-medio text-sm">Entregada por la Sexta Compañía de Bomberos</p>
+                <p className="text-gris-medio text-sm dark:text-gray-400">Entregada por la Sexta Compañía de Bomberos</p>
               </div>
             </div>
           </section>
@@ -343,7 +348,7 @@ export default function Historia() {
                 Fue acogida hasta <strong>diciembre de 1975</strong>, cuando se trasladó a su actual y definitiva ubicación en <strong>calle Logroño 1289</strong> en Viña del Mar Alto, gracias a la donación del terreno que les hizo el <strong>Club de Campo El Refugio</strong>.
               </p>
               <div className="bg-rojo-bombero text-white rounded-lg p-4 inline-flex items-center gap-3">
-                <span className="text-2xl">📍</span>
+                <MapPin className="w-6 h-6" aria-hidden="true" />
                 <span className="font-heading font-bold">Logroño 1289, Viña del Mar Alto</span>
               </div>
             </div>
@@ -383,43 +388,46 @@ export default function Historia() {
               <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-rojo-bombero transform md:-translate-x-1/2" />
               <div className="space-y-8">
                 {[
-                  { year: "1968", event: "Fundación de la Brigada Forestal de Viña del Mar Alto", icon: "🔥" },
-                  { year: "Julio 1971", event: "Distribución de 1.400.000 litros de agua tras terremoto", icon: "💧" },
-                  { year: "21 Sep 1971", event: "Fundación de la Séptima Compañía de Bomberos", icon: "🎉" },
-                  { year: "1974", event: "Traslado temporal al Cuartel General por temporal", icon: "🌪️" },
-                  { year: "Dic 1975", event: "Traslado a calle Logroño 1289", icon: "📍" },
-                  { year: "1980s", event: "Especialización en incendios en altura", icon: "🏗️" },
-                  { year: "25 Nov 1995", event: "Canje con Vigésima Compañía Apoquindo", icon: "🤝" },
-                ].map((item, index) => (
-                  <div key={index} className={`relative flex items-center gap-6 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
-                    <div className="flex-1 md:text-right">
-                      {index % 2 === 0 ? (
-                        <div className="bg-gris-claro rounded-lg p-4 inline-block">
-                          <p className="font-heading text-2xl font-bold text-rojo-bombero">{item.year}</p>
-                          <p className="text-gris-medio">{item.event}</p>
-                        </div>
-                      ) : (
-                        <div className="hidden md:block" />
-                      )}
+                  { year: "1968", event: "Fundación de la Brigada Forestal de Viña del Mar Alto", icon: Flame },
+                  { year: "Julio 1971", event: "Distribución de 1.400.000 litros de agua tras terremoto", icon: Droplets },
+                  { year: "21 Sep 1971", event: "Fundación de la Séptima Compañía de Bomberos", icon: PartyPopper },
+                  { year: "1974", event: "Traslado temporal al Cuartel General por temporal", icon: Wind },
+                  { year: "Dic 1975", event: "Traslado a calle Logroño 1289", icon: MapPin },
+                  { year: "1980s", event: "Especialización en incendios en altura", icon: Building },
+                  { year: "25 Nov 1995", event: "Canje con Vigésima Compañía Apoquindo", icon: Handshake },
+                ].map((item, index) => {
+                  const IconComponent = item.icon
+                  return (
+                    <div key={index} className={`relative flex items-center gap-6 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+                      <div className="flex-1 md:text-right">
+                        {index % 2 === 0 ? (
+                          <div className="bg-gris-claro rounded-lg p-4 inline-block dark:bg-gray-800">
+                            <p className="font-heading text-2xl font-bold text-rojo-bombero">{item.year}</p>
+                            <p className="text-gris-medio dark:text-gray-300">{item.event}</p>
+                          </div>
+                        ) : (
+                          <div className="hidden md:block" />
+                        )}
+                      </div>
+                      <div className="absolute left-4 md:left-1/2 w-10 h-10 bg-rojo-bombero rounded-full flex items-center justify-center transform -translate-x-1/2 border-4 border-white">
+                        <IconComponent className="w-5 h-5 text-white" aria-hidden="true" />
+                      </div>
+                      <div className="flex-1">
+                        {index % 2 !== 0 ? (
+                          <div className="bg-gris-claro rounded-lg p-4 inline-block dark:bg-gray-800">
+                            <p className="font-heading text-2xl font-bold text-rojo-bombero">{item.year}</p>
+                            <p className="text-gris-medio dark:text-gray-300">{item.event}</p>
+                          </div>
+                        ) : (
+                          <div className="md:hidden bg-gris-claro rounded-lg p-4 inline-block dark:bg-gray-800">
+                            <p className="font-heading text-2xl font-bold text-rojo-bombero">{item.year}</p>
+                            <p className="text-gris-medio dark:text-gray-300">{item.event}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="absolute left-4 md:left-1/2 w-10 h-10 bg-rojo-bombero rounded-full flex items-center justify-center transform -translate-x-1/2 border-4 border-white">
-                      <span>{item.icon}</span>
-                    </div>
-                    <div className="flex-1">
-                      {index % 2 !== 0 ? (
-                        <div className="bg-gris-claro rounded-lg p-4 inline-block">
-                          <p className="font-heading text-2xl font-bold text-rojo-bombero">{item.year}</p>
-                          <p className="text-gris-medio">{item.event}</p>
-                        </div>
-                      ) : (
-                        <div className="md:hidden bg-gris-claro rounded-lg p-4 inline-block">
-                          <p className="font-heading text-2xl font-bold text-rojo-bombero">{item.year}</p>
-                          <p className="text-gris-medio">{item.event}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </section>

@@ -46,7 +46,7 @@ export default function Contacto() {
                   </div>
                   <div>
                     <p className="font-semibold">Dirección</p>
-                    <p className="text-gris-medio">Viña del Mar, Chile</p>
+                    <p className="text-gris-medio">Logroño 1298, Viña del Mar Alto, Chile</p>
                   </div>
                 </div>
               </div>
