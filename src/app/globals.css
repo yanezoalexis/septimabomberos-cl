@@ -1,5 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
+
+@theme inline {
+  --color-rojo-bombero: #C41E3A;
+  --color-rojo-oscuro: #8B0000;
+  --color-blanco: #FFFFFF;
+  --color-gris-claro: #F5F5F5;
+  --color-gris-carbon: #1A1A1A;
+  --color-gris-medio: #4A4A4A;
+  --color-amarillo-seguridad: #FFD700;
+  --color-verde-exito: #228B22;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-heading: var(--font-oswald);
+  --font-body: var(--font-source-sans);
+  --font-mono: var(--font-jetbrains);
+}
 
 :root {
   --color-rojo-bombero: #C41E3A;
@@ -14,20 +29,19 @@
   --foreground: #1A1A1A;
 }
 
-@theme inline {
-  --color-rojo-bombero: #C41E3A;
-  --color-rojo-oscuro: #8B0000;
-  --color-blanco: #FFFFFF;
-  --color-gris-claro: #F5F5F5;
-  --color-gris-carbon: #1A1A1A;
-  --color-gris-medio: #4A4A4A;
-  --color-amarillo-seguridad: #FFD700;
-  --color-verde-exito: #228B22;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-heading: 'Oswald', sans-serif;
-  --font-body: 'Source Sans 3', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0F0F0F;
+    --foreground: #F5F5F5;
+    --color-rojo-bombero: #DC143C;
+    --color-rojo-oscuro: #B22222;
+    --color-blanco: #1A1A1A;
+    --color-gris-claro: #1F1F1F;
+    --color-gris-carbon: #F5F5F5;
+    --color-gris-medio: #B0B0B0;
+    --color-amarillo-seguridad: #FFC107;
+    --color-verde-exito: #32CD32;
+  }
 }
 
 * {
@@ -37,12 +51,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-source-sans), 'Source Sans 3', system-ui, sans-serif;
   line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Oswald', sans-serif;
+  font-family: var(--font-oswald), 'Oswald', sans-serif;
   font-weight: 600;
   line-height: 1.2;
   text-transform: uppercase;
@@ -58,13 +72,6 @@ a {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 1rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121212;
-    --foreground: #F5F5F5;
-  }
 }
 
 @media (min-width: 768px) {
