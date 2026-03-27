@@ -1,28 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, X, Shield, User } from "lucide-react";
-import { getStatusColor, getStatusLabel } from "@/lib/utils";
+import { Plus, Edit, Trash2, X, Shield, User, Mail } from "lucide-react";
 
 interface UserData {
   id: string;
   name: string;
   email: string;
   role: string;
+  grado: string;
   isActive: boolean;
   createdAt: string;
   lastLogin: string | null;
 }
 
+const GRADOS = [
+  "Comandante",
+  "Vicecomandante",
+  "Secretario",
+  "Tesorero",
+  "Capitán",
+  "Teniente 1°",
+  "Teniente 2°",
+  "Teniente 3°",
+  "Ayudante",
+  "Sargento 1°",
+  "Sargento 2°",
+  "Cabo 1°",
+  "Cabo 2°",
+  "Bombero",
+];
+
+const ROLES = [
+  { value: "ADMIN", label: "Administrador" },
+  { value: "OFICIAL", label: "Oficial" },
+  { value: "BOMBERO", label: "Bombero" },
+];
+
 export default function UsuariosPage() {
-  const [users, setUsers] = useState<UserData[]>([
-    { id: "1", name: "Carlos Mendoza", email: "carlos.mendoza@7ciabomberos.cl", role: "ADMIN", isActive: true, createdAt: "2023-01-15", lastLogin: "2024-03-27" },
-    { id: "2", name: "Juan Pérez", email: "juan.perez@7ciabomberos.cl", role: "BOMBERO", isActive: true, createdAt: "2023-03-20", lastLogin: "2024-03-26" },
-    { id: "3", name: "Roberto Sánchez", email: "roberto.sanchez@7ciabomberos.cl", role: "BOMBERO", isActive: true, createdAt: "2023-05-10", lastLogin: "2024-03-25" },
-    { id: "4", name: "Miguel Torres", email: "miguel.torres@7ciabomberos.cl", role: "BOMBERO", isActive: true, createdAt: "2023-08-15", lastLogin: "2024-03-24" },
-    { id: "5", name: "Pedro Ramírez", email: "pedro.ramirez@7ciabomberos.cl", role: "BOMBERO", isActive: false, createdAt: "2023-09-01", lastLogin: "2024-02-15" },
-    { id: "6", name: "Ana María López", email: "ana.lopez@7ciabomberos.cl", role: "BOMBERO", isActive: true, createdAt: "2024-01-10", lastLogin: "2024-03-20" },
-  ]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,14 +57,23 @@ export default function UsuariosPage() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
     if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? { ...editingUser } : u)));
+      setUsers(users.map((u) => (u.id === editingUser.id ? { 
+        ...editingUser,
+        name: formData.get("name") as string,
+        email: formData.get("email") as string,
+        role: formData.get("role") as string,
+        grado: formData.get("grado") as string,
+      } : u)));
     } else {
       const newUser: UserData = {
         id: Date.now().toString(),
-        name: (e.currentTarget.elements.namedItem("name") as HTMLInputElement).value,
-        email: (e.currentTarget.elements.namedItem("email") as HTMLInputElement).value,
-        role: (e.currentTarget.elements.namedItem("role") as HTMLSelectElement).value,
+        name: formData.get("name") as string,
+        email: formData.get("email") as string,
+        role: formData.get("role") as string,
+        grado: formData.get("grado") as string,
         isActive: true,
         createdAt: new Date().toISOString().split("T")[0],
         lastLogin: null,
@@ -151,10 +176,9 @@ export default function UsuariosPage() {
             <thead>
               <tr className="border-b border-[#2A2A2A] bg-[#0F0F0F]">
                 <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Usuario</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Email</th>
+                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Grado</th>
                 <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Rol</th>
                 <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Estado</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Último Acceso</th>
                 <th className="text-right text-gray-400 text-sm font-medium py-3 px-4">Acciones</th>
               </tr>
             </thead>
@@ -166,16 +190,25 @@ export default function UsuariosPage() {
                       <div className="w-9 h-9 bg-[#C41E3A] rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">{user.name.charAt(0)}</span>
                       </div>
-                      <span className="text-white text-sm font-medium">{user.name}</span>
+                      <div>
+                        <span className="text-white text-sm font-medium block">{user.name}</span>
+                        <span className="text-gray-500 text-xs flex items-center gap-1">
+                          <Mail className="w-3 h-3" /> {user.email}
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-gray-400 text-sm">{user.email}</td>
+                  <td className="py-3 px-4 text-gray-300 text-sm">{user.grado}</td>
                   <td className="py-3 px-4">
                     <span className={`px-2 py-1 text-xs rounded-full flex w-fit ${
-                      user.role === "ADMIN" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "bg-blue-500/20 text-blue-400"
+                      user.role === "ADMIN" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : 
+                      user.role === "OFICIAL" ? "bg-red-500/20 text-red-400" : 
+                      "bg-blue-500/20 text-blue-400"
                     }`}>
                       {user.role === "ADMIN" ? (
                         <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Admin</span>
+                      ) : user.role === "OFICIAL" ? (
+                        <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Oficial</span>
                       ) : "Bombero"}
                     </span>
                   </td>
@@ -188,7 +221,6 @@ export default function UsuariosPage() {
                       </span>
                     </button>
                   </td>
-                  <td className="py-3 px-4 text-gray-500 text-sm">{user.lastLogin || "Nunca"}</td>
                   <td className="py-3 px-4">
                     <div className="flex justify-end gap-2">
                       <button
@@ -216,7 +248,9 @@ export default function UsuariosPage() {
         </div>
         {filteredUsers.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No se encontraron usuarios</p>
+            <User className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-500">No hay usuarios registrados</p>
+            <p className="text-gray-600 text-sm mt-1">Click en "Agregar Usuario" para crear uno</p>
           </div>
         )}
       </div>
@@ -226,7 +260,7 @@ export default function UsuariosPage() {
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b border-[#2A2A2A]">
               <h2 className="text-lg font-semibold text-white">
-                {editingUser ? "Editar Usuario" : "Agregar Usuario"}
+                {editingUser ? "Editar Usuario" : "Agregar Oficial/Bombero"}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="p-1 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -234,12 +268,21 @@ export default function UsuariosPage() {
             </div>
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
-                <input type="text" name="name" defaultValue={editingUser?.name} required className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
+                <label className="block text-sm font-medium text-gray-300 mb-1">Nombre Completo *</label>
+                <input type="text" name="name" defaultValue={editingUser?.name} required placeholder="Ej: Juan Pérez" className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Grado *</label>
+                <select name="grado" defaultValue={editingUser?.grado || ""} required className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]">
+                  <option value="">Seleccionar grado...</option>
+                  {GRADOS.map((grado) => (
+                    <option key={grado} value={grado}>{grado}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Email *</label>
-                <input type="email" name="email" defaultValue={editingUser?.email} required className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
+                <input type="email" name="email" defaultValue={editingUser?.email} required placeholder="oficial@7ciabomberos.cl" className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Contraseña {editingUser ? "(dejar vacío para no cambiar)" : "*"}</label>
@@ -248,8 +291,9 @@ export default function UsuariosPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Rol *</label>
                 <select name="role" defaultValue={editingUser?.role || "BOMBERO"} required className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]">
-                  <option value="ADMIN">Administrador</option>
-                  <option value="BOMBERO">Bombero</option>
+                  {ROLES.map((rol) => (
+                    <option key={rol.value} value={rol.value}>{rol.label}</option>
+                  ))}
                 </select>
               </div>
               <div className="flex justify-end gap-3 pt-4">
