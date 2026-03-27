@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Edit, Trash2, X, AlertCircle, Package, Truck, Warehouse, Building2, ChevronDown, ChevronUp, ArrowDown, ArrowUp } from "lucide-react";
+import { Plus, Search, Edit, Trash2, X, AlertCircle, Package, Truck, Warehouse, Building2, ChevronDown, ChevronUp, ArrowDown, ArrowUp, Eye, Calendar, MapPin, Hash, AlertTriangle } from "lucide-react";
 
 type LocationType = "UNIDADES" | "BODEGA_INFERIOR" | "BODEGA_SUPERIOR" | "CUARTEL";
 type ItemStatus = "NUEVO" | "USADO" | "MAL_ESTADO" | "BAJA";
@@ -74,6 +74,8 @@ export default function InventarioPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState<InventoryItem | null>(null);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
@@ -115,6 +117,11 @@ export default function InventarioPage() {
   function openEditModal(item: InventoryItem) {
     setEditingItem(item);
     setIsModalOpen(true);
+  }
+
+  function openDetailModal(item: InventoryItem) {
+    setDetailItem(item);
+    setIsDetailModalOpen(true);
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -317,6 +324,13 @@ export default function InventarioPage() {
                             <td className="py-3 px-4">
                               <div className="flex justify-end gap-1">
                                 <button
+                                  onClick={() => openDetailModal(item)}
+                                  className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
+                                  title="Ver Detalle"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
                                   onClick={() => openEditModal(item)}
                                   className="p-2 text-gray-400 hover:text-white hover:bg-[#2A2A2A] rounded transition-colors"
                                   title="Editar"
@@ -475,6 +489,123 @@ export default function InventarioPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isDetailModalOpen && detailItem && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-[#1A1A1A] border-b border-[#2A2A2A] p-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                <Package className="w-6 h-6 text-[#C41E3A]" />
+                Detalle del Item
+              </h2>
+              <button 
+                onClick={() => setIsDetailModalOpen(false)} 
+                className="p-2 text-gray-400 hover:text-white hover:bg-[#2A2A2A] rounded-md transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{detailItem.name}</h3>
+                  <p className="text-gray-400 mt-1">{detailItem.description}</p>
+                </div>
+                <span className={`px-3 py-1 text-sm rounded-full ${getStatusInfo(detailItem.status).color}`}>
+                  {getStatusInfo(detailItem.status).label}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-[#0F0F0F] rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-gray-400 mb-2">
+                    <Hash className="w-4 h-4" />
+                    <span className="text-sm">Cantidad Actual</span>
+                  </div>
+                  <p className={`text-3xl font-bold ${detailItem.quantity <= detailItem.minStock ? "text-red-400" : "text-white"}`}>
+                    {detailItem.quantity}
+                  </p>
+                  {detailItem.quantity <= detailItem.minStock && (
+                    <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span>Stock bajo (mínimo: {detailItem.minStock})</span>
+                    </div>
+                  )}
+                </div>
+                <div className="bg-[#0F0F0F] rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-gray-400 mb-2">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">Stock Mínimo</span>
+                  </div>
+                  <p className="text-3xl font-bold text-white">{detailItem.minStock}</p>
+                </div>
+              </div>
+
+              <div className="border-t border-[#2A2A2A] pt-6">
+                <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Información Adicional</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#C41E3A]/10 rounded-lg flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-[#C41E3A]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Ubicación</p>
+                      <p className="text-white">
+                        {locationConfig[detailItem.location as LocationType]?.label || detailItem.location}
+                        {detailItem.unit && ` - Unidad ${detailItem.unit}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#C41E3A]/10 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-[#C41E3A]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Fecha de Adquisición</p>
+                      <p className="text-white">
+                        {new Date(detailItem.acquisitionDate).toLocaleDateString("es-CL", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric"
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#C41E3A]/10 rounded-lg flex items-center justify-center">
+                      <Hash className="w-5 h-5 text-[#C41E3A]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">ID del Item</p>
+                      <p className="text-white font-mono text-sm">{detailItem.id}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-[#2A2A2A]">
+                <button
+                  onClick={() => {
+                    setIsDetailModalOpen(false);
+                    openEditModal(detailItem);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#C41E3A] hover:bg-[#A01830] text-white px-4 py-3 rounded-md transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  Editar Item
+                </button>
+                <button
+                  onClick={() => setIsDetailModalOpen(false)}
+                  className="px-6 py-3 border border-[#3A3A3A] text-gray-400 hover:text-white hover:border-gray-500 rounded-md transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
