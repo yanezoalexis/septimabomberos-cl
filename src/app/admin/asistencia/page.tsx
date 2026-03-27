@@ -38,22 +38,9 @@ interface FormData {
   notes: string;
 }
 
-const mockIncidents: IncidentRecord[] = [
-  { id: "1", date: "2024-03-27", type: "INCENDIO_ESTRUCTURAL", description: "Incendio en Av. Valparaíso #456", horaSalida: "14:30", horaLlegada: "17:45", clave: "1-3", lugar: "Av. Valparaíso #456" },
-  { id: "2", date: "2024-03-25", type: "RESCATE", description: "Accidente vehicular Ruta 68", horaSalida: "08:15", horaLlegada: "10:30", clave: "1-2", lugar: "Ruta 68" },
-  { id: "3", date: "2024-03-22", type: "CAPACITACION", description: "Capacitación rescate en altura", horaSalida: "09:00", horaLlegada: "13:00", clave: "1-1", lugar: "Cuartel Séptima" },
-];
+const mockIncidents: IncidentRecord[] = [];
 
-const mockAttendance: AttendanceRecord[] = [
-  { id: "1", bomberId: "7001", bomberNro: 1, bomberName: "Sergio Muñoz Carrasco", incidentId: "1", code: "P", notes: null },
-  { id: "2", bomberId: "7002", bomberNro: 2, bomberName: "Pablo Zavala Cornejo", incidentId: "1", code: "P", notes: null },
-  { id: "3", bomberId: "7003", bomberNro: 3, bomberName: "Jorge Araya Rojas", incidentId: "1", code: "P", notes: null },
-  { id: "4", bomberId: "7004", bomberNro: 4, bomberName: "Leonardo Muñoz Carrasco", incidentId: "1", code: "A", notes: "Fuera de la ciudad" },
-  { id: "5", bomberId: "7053", bomberNro: 54, bomberName: "Felipe Airola de la Fuente", incidentId: "1", code: "P", notes: null },
-  { id: "6", bomberId: "7054", bomberNro: 55, bomberName: "Carlos Huerta Westwood", incidentId: "1", code: "P", notes: null },
-  { id: "7", bomberId: "7055", bomberNro: 56, bomberName: "Mario Suárez González", incidentId: "1", code: "L", notes: "Licencia médica" },
-  { id: "8", bomberId: "7056", bomberNro: 57, bomberName: "Matías Paillamán Flores", incidentId: "1", code: "P", notes: null },
-];
+const mockAttendance: AttendanceRecord[] = [];
 
 export default function AsistenciaPage() {
   const [selectedMonth, setSelectedMonth] = useState("2024-03");
@@ -62,6 +49,7 @@ export default function AsistenciaPage() {
   const [modalType, setModalType] = useState<"incident" | "attendance">("incident");
   const [incidentFilter, setIncidentFilter] = useState("");
   const [editingAttendance, setEditingAttendance] = useState<AttendanceRecord | null>(null);
+  const [editingIncident, setEditingIncident] = useState<IncidentRecord | null>(null);
   const [incidents, setIncidents] = useState<IncidentRecord[]>(mockIncidents);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>(mockAttendance);
   const [formData, setFormData] = useState<FormData>({
@@ -123,18 +111,27 @@ export default function AsistenciaPage() {
 
   const handleAddIncident = (e: React.FormEvent) => {
     e.preventDefault();
-    const newIncident: IncidentRecord = {
-      id: Date.now().toString(),
-      date: formData.date || new Date().toISOString().split("T")[0],
-      type: formData.category,
-      description: formData.description,
-      horaSalida: formData.horaSalida,
-      horaLlegada: formData.horaLlegada,
-      clave: formData.clave,
-      lugar: formData.lugar,
-    };
-    setIncidents([newIncident, ...incidents]);
-    setSelectedIncident(newIncident.id);
+    
+    if (editingIncident) {
+      setIncidents(incidents.map(i => 
+        i.id === editingIncident.id 
+          ? { ...i, date: formData.date, type: formData.category, description: formData.description, horaSalida: formData.horaSalida, horaLlegada: formData.horaLlegada, clave: formData.clave, lugar: formData.lugar }
+          : i
+      ));
+    } else {
+      const newIncident: IncidentRecord = {
+        id: Date.now().toString(),
+        date: formData.date || new Date().toISOString().split("T")[0],
+        type: formData.category,
+        description: formData.description,
+        horaSalida: formData.horaSalida,
+        horaLlegada: formData.horaLlegada,
+        clave: formData.clave,
+        lugar: formData.lugar,
+      };
+      setIncidents([newIncident, ...incidents]);
+      setSelectedIncident(newIncident.id);
+    }
     resetForm();
     setIsModalOpen(false);
   };
@@ -180,6 +177,24 @@ export default function AsistenciaPage() {
     setIsModalOpen(true);
   };
 
+  const handleEditIncident = (incident: IncidentRecord) => {
+    setEditingIncident(incident);
+    setFormData({
+      date: incident.date,
+      category: incident.type,
+      description: incident.description,
+      horaSalida: incident.horaSalida,
+      horaLlegada: incident.horaLlegada,
+      clave: incident.clave,
+      lugar: incident.lugar,
+      bomberId: "",
+      code: "",
+      notes: "",
+    });
+    setModalType("incident");
+    setIsModalOpen(true);
+  };
+
   const resetForm = () => {
     setFormData({
       date: "",
@@ -194,6 +209,7 @@ export default function AsistenciaPage() {
       notes: "",
     });
     setEditingAttendance(null);
+    setEditingIncident(null);
   };
 
   const getEmergencyTypeLabel = (type: string) => {
@@ -355,6 +371,12 @@ export default function AsistenciaPage() {
                       {incident.horaSalida} - {incident.horaLlegada}
                     </p>
                   </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleEditIncident(incident); }}
+                    className="text-gray-500 hover:text-white text-xs px-2 py-1 transition-colors"
+                  >
+                    Editar
+                  </button>
                 </div>
               </button>
             ))}
@@ -467,7 +489,7 @@ export default function AsistenciaPage() {
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg w-full max-w-lg">
             <div className="flex items-center justify-between p-4 border-b border-[#2A2A2A]">
               <h2 className="text-lg font-semibold text-white">
-                {modalType === "incident" ? "Registrar Nueva Salida" : editingAttendance ? "Editar Asistencia" : "Registrar Asistencia"}
+                {modalType === "incident" ? (editingIncident ? "Editar Salida" : "Registrar Nueva Salida") : editingAttendance ? "Editar Asistencia" : "Registrar Asistencia"}
               </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
