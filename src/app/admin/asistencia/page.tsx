@@ -1,207 +1,661 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Clock, User, CalendarDays, FileDown } from "lucide-react";
-import { getStatusLabel, attendanceTypes } from "@/lib/utils";
+import { useState, useMemo } from "react";
+import { Plus, CalendarDays, Download, ChevronLeft, ChevronRight, Search, AlertCircle } from "lucide-react";
+import { cbvmEmergencyTypes, attendanceCodes } from "@/lib/utils";
+
+interface IncidentRecord {
+  id: string;
+  date: string;
+  type: string;
+  description: string;
+  horaSalida: string;
+  horaLlegada: string;
+  clave: string;
+}
 
 interface AttendanceRecord {
   id: string;
-  user: { id: string; name: string };
-  date: string;
-  entryTime: string;
-  exitTime: string | null;
-  type: string;
+  bomberId: string;
+  bomberName: string;
+  incidentId: string;
+  code: string;
   notes: string | null;
 }
 
-const mockUsers = [
-  { id: "1", name: "Carlos Mendoza" },
-  { id: "2", name: "Juan Pérez" },
-  { id: "3", name: "Roberto Sánchez" },
-  { id: "4", name: "Miguel Torres" },
+interface FormData {
+  date: string;
+  type: string;
+  description: string;
+  horaSalida: string;
+  horaLlegada: string;
+  clave: string;
+  bomberId: string;
+  code: string;
+  notes: string;
+}
+
+const mockBombers = [
+  { id: "1", name: "Carlos Mendoza", rank: "Cabo" },
+  { id: "2", name: "Juan Pérez", rank: "Bombero" },
+  { id: "3", name: "Roberto Sánchez", rank: "Sargento" },
+  { id: "4", name: "Miguel Torres", rank: "Bombero" },
+  { id: "5", name: "Luis Vega", rank: "Cabo" },
+  { id: "6", name: "Pedro Muñoz", rank: "Teniente" },
+  { id: "7", name: "Andrés Lima", rank: "Bombero" },
+  { id: "8", name: "Jorge Castro", rank: "Cabo" },
+];
+
+const mockIncidents = [
+  { id: "1", date: "2024-03-27", type: "INCENDIO_ESTRUCTURAL", description: "Incendio en Av. Valparaíso #456", horaSalida: "14:30", horaLlegada: "17:45", clave: "P3" },
+  { id: "2", date: "2024-03-25", type: "RESCATE", description: "Accidente vehicular Ruta 68", horaSalida: "08:15", horaLlegada: "10:30", clave: "P2" },
+  { id: "3", date: "2024-03-22", type: "CAPACITACION", description: "Capacitación rescate en altura", horaSalida: "09:00", horaLlegada: "13:00", clave: "P1" },
+];
+
+const mockAttendance: AttendanceRecord[] = [
+  { id: "1", bomberId: "1", bomberName: "Carlos Mendoza", incidentId: "1", code: "P", notes: null },
+  { id: "2", bomberId: "2", bomberName: "Juan Pérez", incidentId: "1", code: "P", notes: null },
+  { id: "3", bomberId: "3", bomberName: "Roberto Sánchez", incidentId: "1", code: "P", notes: null },
+  { id: "4", bomberId: "4", bomberName: "Miguel Torres", incidentId: "1", code: "A", notes: "Fuera de la ciudad" },
+  { id: "5", bomberId: "5", bomberName: "Luis Vega", incidentId: "1", code: "P", notes: null },
+  { id: "6", bomberId: "6", bomberName: "Pedro Muñoz", incidentId: "1", code: "P", notes: null },
+  { id: "7", bomberId: "7", bomberName: "Andrés Lima", incidentId: "1", code: "L", notes: "Licencia médica" },
+  { id: "8", bomberId: "8", bomberName: "Jorge Castro", incidentId: "1", code: "P", notes: null },
+  { id: "9", bomberId: "1", bomberName: "Carlos Mendoza", incidentId: "2", code: "P", notes: null },
+  { id: "10", bomberId: "2", bomberName: "Juan Pérez", incidentId: "2", code: "P", notes: null },
+  { id: "11", bomberId: "3", bomberName: "Roberto Sánchez", incidentId: "2", code: "R", notes: "Reemplaza a Miguel Torres" },
+  { id: "12", bomberId: "4", bomberName: "Miguel Torres", incidentId: "2", code: "A", notes: null },
+  { id: "13", bomberId: "5", bomberName: "Luis Vega", incidentId: "2", code: "P", notes: null },
+  { id: "14", bomberId: "6", bomberName: "Pedro Muñoz", incidentId: "2", code: "P", notes: null },
+  { id: "15", bomberId: "7", bomberName: "Andrés Lima", incidentId: "2", code: "P", notes: null },
+  { id: "16", bomberId: "8", bomberName: "Jorge Castro", incidentId: "2", code: "P", notes: null },
 ];
 
 export default function AsistenciaPage() {
-  const [records, setRecords] = useState<AttendanceRecord[]>([
-    { id: "1", user: { id: "1", name: "Carlos Mendoza" }, date: "2024-03-27", entryTime: "18:00", exitTime: "21:30", type: "CAPACITACION", notes: "Rescate en altura" },
-    { id: "2", user: { id: "2", name: "Juan Pérez" }, date: "2024-03-27", entryTime: "18:05", exitTime: "21:30", type: "CAPACITACION", notes: null },
-    { id: "3", user: { id: "3", name: "Roberto Sánchez" }, date: "2024-03-27", entryTime: "17:55", exitTime: "21:30", type: "CAPACITACION", notes: null },
-    { id: "4", user: { id: "1", name: "Carlos Mendoza" }, date: "2024-03-26", entryTime: "20:00", exitTime: "22:00", type: "REUNION", notes: "Reunión mensual" },
-    { id: "5", user: { id: "4", name: "Miguel Torres" }, date: "2024-03-26", entryTime: "20:00", exitTime: "22:00", type: "REUNION", notes: null },
-  ]);
+  const [selectedMonth, setSelectedMonth] = useState("2024-03");
+  const [selectedIncident, setSelectedIncident] = useState<string | null>("1");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [modalType, setModalType] = useState<"incident" | "attendance">("incident");
+  const [incidentFilter, setIncidentFilter] = useState("");
+  const [editingAttendance, setEditingAttendance] = useState<AttendanceRecord | null>(null);
+  const [incidents, setIncidents] = useState<IncidentRecord[]>(mockIncidents);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>(mockAttendance);
+  const [formData, setFormData] = useState<FormData>({
+    date: "",
+    type: "",
+    description: "",
+    horaSalida: "",
+    horaLlegada: "",
+    clave: "P1",
+    bomberId: "",
+    code: "",
+    notes: "",
+  });
 
-  const todayCount = records.filter((r) => r.date === "2024-03-27").length;
-  const monthCount = records.filter((r) => r.date.startsWith("2024-03")).length;
+  const filteredIncidents = useMemo(() => {
+    return incidents.filter(i => 
+      incidentFilter === "" || 
+      i.date === incidentFilter ||
+      i.type.toLowerCase().includes(incidentFilter.toLowerCase())
+    );
+  }, [incidentFilter, incidents]);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const currentIncident = incidents.find(i => i.id === selectedIncident);
+  
+  const currentAttendance = useMemo(() => {
+    if (!selectedIncident) return [];
+    return attendance.filter(a => a.incidentId === selectedIncident);
+  }, [selectedIncident, attendance]);
+
+  const stats = useMemo(() => {
+    const present = currentAttendance.filter(a => a.code === "P").length;
+    const presentAbsence = currentAttendance.filter(a => a.code === "PA").length;
+    const absent = currentAttendance.filter(a => a.code === "A").length;
+    const license = currentAttendance.filter(a => a.code === "L").length;
+    const total = mockBombers.length;
+    return { present, presentAbsence, absent, license, total, rate: total > 0 ? Math.round(((present + presentAbsence) / total) * 100) : 0 };
+  }, [currentAttendance]);
+
+  const getCodeColor = (code: string) => {
+    if (code === "P") return "bg-blue-500/20 text-blue-400 border border-blue-500/30";
+    if (code === "PA") return "bg-red-500/20 text-red-400 border border-red-500/30";
+    if (code === "A") return "bg-blue-500/20 text-blue-400 border border-blue-500/30";
+    if (code === "L") return "bg-red-500/20 text-red-400 border border-red-500/30";
+    if (code === "R") return "bg-purple-500/20 text-purple-400 border border-purple-500/30";
+    return "bg-gray-500/20 text-gray-400";
+  };
+
+  const handleSelectCode = (code: string) => {
+    setFormData({ ...formData, code });
+  };
+
+  const handleAddIncident = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      const formData = new FormData(e.currentTarget);
-      const newRecord: AttendanceRecord = {
+    const newIncident: IncidentRecord = {
+      id: Date.now().toString(),
+      date: formData.date || new Date().toISOString().split("T")[0],
+      type: formData.type,
+      description: formData.description,
+      horaSalida: formData.horaSalida,
+      horaLlegada: formData.horaLlegada,
+      clave: formData.clave,
+    };
+    setIncidents([newIncident, ...incidents]);
+    setSelectedIncident(newIncident.id);
+    resetForm();
+    setIsModalOpen(false);
+  };
+
+  const handleAddAttendance = (e: React.FormEvent) => {
+    e.preventDefault();
+    const bomber = mockBombers.find(b => b.id === formData.bomberId);
+    if (!bomber || !selectedIncident) return;
+
+    if (editingAttendance) {
+      setAttendance(attendance.map(a => 
+        a.id === editingAttendance.id 
+          ? { ...a, code: formData.code, notes: formData.notes || null }
+          : a
+      ));
+    } else {
+      const newAttendance: AttendanceRecord = {
         id: Date.now().toString(),
-        user: { id: formData.get("userId") as string, name: mockUsers.find((u) => u.id === formData.get("userId"))?.name || "" },
-        date: formData.get("date") as string,
-        entryTime: formData.get("entryTime") as string,
-        exitTime: (formData.get("exitTime") as string) || null,
-        type: formData.get("type") as string,
-        notes: (formData.get("notes") as string) || null,
+        bomberId: formData.bomberId,
+        bomberName: `${bomber.rank} ${bomber.name}`,
+        incidentId: selectedIncident,
+        code: formData.code,
+        notes: formData.notes || null,
       };
-      setRecords([newRecord, ...records]);
-      setIsModalOpen(false);
-      setIsLoading(false);
-    }, 500);
-  }
+      setAttendance([...attendance, newAttendance]);
+    }
+    resetForm();
+    setIsModalOpen(false);
+  };
+
+  const handleEditAttendance = (record: AttendanceRecord) => {
+    setEditingAttendance(record);
+    setFormData({
+      ...formData,
+      bomberId: record.bomberId,
+      code: record.code,
+      notes: record.notes || "",
+    });
+    setModalType("attendance");
+    setIsModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      date: "",
+      type: "",
+      description: "",
+      horaSalida: "",
+      horaLlegada: "",
+      clave: "P1",
+      bomberId: "",
+      code: "",
+      notes: "",
+    });
+    setEditingAttendance(null);
+  };
+
+  const getEmergencyTypeLabel = (type: string) => {
+    const emergency = cbvmEmergencyTypes.find(e => e.value === type);
+    return emergency?.label || type;
+  };
+
+  const getEmergencyTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
+      INCENDIO_ESTRUCTURAL: "bg-red-500/20 text-red-400",
+      INCENDIO_FORESTAL: "bg-orange-500/20 text-orange-400",
+      RESCATE: "bg-blue-500/20 text-blue-400",
+      SALUD: "bg-green-500/20 text-green-400",
+      MATERIALES_PELIGROSOS: "bg-yellow-500/20 text-yellow-400",
+      AUXILIO: "bg-cyan-500/20 text-cyan-400",
+      SERVICIO_VARIOS: "bg-gray-500/20 text-gray-400",
+      CAPACITACION: "bg-purple-500/20 text-purple-400",
+      REUNION: "bg-indigo-500/20 text-indigo-400",
+      PRACTICA: "bg-teal-500/20 text-teal-400",
+    };
+    return colors[type] || "bg-gray-500/20 text-gray-400";
+  };
+
+  const openAddModal = (type: "incident" | "attendance") => {
+    resetForm();
+    setModalType(type);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "Oswald, sans-serif" }}>
-            Control de Asistencia
+            Control de Asistencia CBVM
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Registro y seguimiento de asistencia
+            Sistema de asistencia según clasificación de emergencia
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] text-gray-300 rounded-md hover:bg-[#2A2A2A] transition-colors">
-            <FileDown className="w-4 h-4" />
+            <Download className="w-4 h-4" />
             Exportar
           </button>
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-[#C41E3A] hover:bg-[#A01830] text-white px-4 py-2 rounded-md transition-colors"
+            onClick={() => openAddModal("incident")}
+            className="flex items-center gap-2 bg-[#D4AF37] hover:bg-[#B8962F] text-black px-4 py-2 rounded-md transition-colors font-medium"
           >
             <Plus className="w-4 h-4" />
-            Registrar
+            Nueva Salida
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-[#C41E3A]/10 rounded-lg">
-              <User className="w-6 h-6 text-[#C41E3A]" />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Asistencia Hoy</p>
-              <p className="text-3xl font-bold text-white">{todayCount}</p>
-            </div>
-          </div>
+      <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded border border-blue-500/30 font-medium">P</span>
+          <span className="text-gray-400">Fue al lugar</span>
         </div>
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-[#D4AF37]/10 rounded-lg">
-              <CalendarDays className="w-6 h-6 text-[#D4AF37]" />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Este Mes</p>
-              <p className="text-3xl font-bold text-white">{monthCount}</p>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded border border-red-500/30 font-medium">P</span>
+          <span className="text-gray-400">Otras funciones</span>
         </div>
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-500/10 rounded-lg">
-              <Clock className="w-6 h-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Promedio Asistencia</p>
-              <p className="text-3xl font-bold text-white">85%</p>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded border border-blue-500/30 font-medium">A</span>
+          <span className="text-gray-400">Ausente</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded border border-red-500/30 font-medium">L</span>
+          <span className="text-gray-400">Licencia</span>
         </div>
       </div>
 
-      <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#2A2A2A] bg-[#0F0F0F]">
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Bombero</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Fecha</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Tipo</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Entrada</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Salida</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Notas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map((record) => (
-                <tr key={record.id} className="border-b border-[#2A2A2A]/50 hover:bg-[#0F0F0F]">
-                  <td className="py-3 px-4 text-white text-sm">{record.user.name}</td>
-                  <td className="py-3 px-4 text-gray-400 text-sm">{record.date}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      record.type === "EMERGENCIA" ? "bg-red-500/20 text-red-400" :
-                      record.type === "CAPACITACION" ? "bg-green-500/20 text-green-400" :
-                      record.type === "REUNION" ? "bg-blue-500/20 text-blue-400" :
-                      "bg-gray-500/20 text-gray-400"
-                    }`}>
-                      {getStatusLabel(record.type)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-gray-400 text-sm">{record.entryTime}</td>
-                  <td className="py-3 px-4 text-gray-400 text-sm">{record.exitTime || "-"}</td>
-                  <td className="py-3 px-4 text-gray-500 text-sm">{record.notes || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-4">
+          <p className="text-gray-400 text-sm">Total</p>
+          <p className="text-3xl font-bold text-white mt-1">{stats.total}</p>
+        </div>
+        <div className="bg-[#1A1A1A] border border-blue-500/20 rounded-lg p-4">
+          <p className="text-blue-400 text-sm">P Fue al lugar</p>
+          <p className="text-3xl font-bold text-blue-400 mt-1">{stats.present}</p>
+        </div>
+        <div className="bg-[#1A1A1A] border border-red-500/20 rounded-lg p-4">
+          <p className="text-red-400 text-sm">P Otras funciones</p>
+          <p className="text-3xl font-bold text-red-400 mt-1">{stats.presentAbsence}</p>
+        </div>
+        <div className="bg-[#1A1A1A] border border-blue-500/20 rounded-lg p-4">
+          <p className="text-blue-400 text-sm">A Ausente</p>
+          <p className="text-3xl font-bold text-blue-400 mt-1">{stats.absent}</p>
+        </div>
+        <div className="bg-[#1A1A1A] border border-red-500/20 rounded-lg p-4">
+          <p className="text-red-400 text-sm">L Licencia</p>
+          <p className="text-3xl font-bold text-red-400 mt-1">{stats.license}</p>
+        </div>
+        <div className="bg-[#1A1A1A] border border-[#D4AF37]/20 rounded-lg p-4">
+          <p className="text-[#D4AF37] text-sm">Tasa</p>
+          <p className="text-3xl font-bold text-[#D4AF37] mt-1">{stats.rate}%</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Salidas / Eventos</h2>
+            <button
+              onClick={() => openAddModal("incident")}
+              className="p-1.5 bg-[#C41E3A] hover:bg-[#A01830] text-white rounded transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Buscar por fecha o tipo..."
+              value={incidentFilter}
+              onChange={(e) => setIncidentFilter(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white text-sm focus:outline-none focus:border-[#C41E3A]"
+            />
+          </div>
+
+          <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            {filteredIncidents.map((incident) => (
+              <button
+                key={incident.id}
+                onClick={() => setSelectedIncident(incident.id)}
+                className={`w-full text-left p-3 rounded-lg border transition-all ${
+                  selectedIncident === incident.id
+                    ? "bg-[#C41E3A]/10 border-[#C41E3A]/50"
+                    : "bg-[#1A1A1A] border-[#2A2A2A] hover:border-[#3A3A3A]"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 text-xs rounded ${getEmergencyTypeColor(incident.type)}`}>
+                        {incident.clave}
+                      </span>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(incident.date).toLocaleDateString("es-CL")}
+                      </span>
+                    </div>
+                    <p className="text-white text-sm font-medium mt-1">
+                      {getEmergencyTypeLabel(incident.type)}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1 line-clamp-1">
+                      {incident.description}
+                    </p>
+                    <p className="text-gray-500 text-xs mt-2">
+                      {incident.horaSalida} - {incident.horaLlegada}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-2">
+          {currentIncident ? (
+            <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg overflow-hidden">
+              <div className="p-4 border-b border-[#2A2A2A] bg-[#0F0F0F]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 text-xs rounded ${getEmergencyTypeColor(currentIncident.type)}`}>
+                        {currentIncident.clave}
+                      </span>
+                      <h2 className="text-lg font-semibold text-white">
+                        {getEmergencyTypeLabel(currentIncident.type)}
+                      </h2>
+                    </div>
+                    <p className="text-gray-400 text-sm mt-1">{currentIncident.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-medium">
+                      {new Date(currentIncident.date).toLocaleDateString("es-CL", { 
+                        weekday: "long", 
+                        day: "numeric", 
+                        month: "long",
+                        year: "numeric"
+                      })}
+                    </p>
+                    <p className="text-[#D4AF37] text-sm mt-1">
+                      {currentIncident.horaSalida} - {currentIncident.horaLlegada}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-white font-medium">Control de Asistencia</h3>
+                  <button
+                    onClick={() => openAddModal("attendance")}
+                    className="flex items-center gap-1 text-sm text-[#C41E3A] hover:text-[#A01830] transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar Bombero
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-[#2A2A2A]">
+                        <th className="text-left text-gray-400 text-sm font-medium py-2 px-3">Grado</th>
+                        <th className="text-left text-gray-400 text-sm font-medium py-2 px-3">Bombero</th>
+                        <th className="text-center text-gray-400 text-sm font-medium py-2 px-3">Código</th>
+                        <th className="text-left text-gray-400 text-sm font-medium py-2 px-3">Observaciones</th>
+                        <th className="text-right text-gray-400 text-sm font-medium py-2 px-3">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockBombers.map((bomber) => {
+                        const attendance = currentAttendance.find(
+                          a => a.bomberId === bomber.id
+                        );
+                        return (
+                          <tr key={bomber.id} className="border-b border-[#2A2A2A]/50 hover:bg-[#0F0F0F]/50">
+                            <td className="py-2 px-3 text-gray-400 text-sm">{bomber.rank}</td>
+                            <td className="py-2 px-3 text-white text-sm font-medium">{bomber.name}</td>
+                            <td className="py-2 px-3 text-center">
+                              {attendance ? (
+                                <span className={`px-3 py-1 rounded font-bold ${getCodeColor(attendance.code)}`}>
+                                  {attendance.code}
+                                </span>
+                              ) : (
+                                <span className="text-gray-600">-</span>
+                              )}
+                            </td>
+                            <td className="py-2 px-3 text-gray-400 text-sm">
+                              {attendance?.notes || <span className="text-gray-600">-</span>}
+                            </td>
+                            <td className="py-2 px-3 text-right">
+                              <button 
+                                onClick={() => attendance && handleEditAttendance(attendance)}
+                                className="text-gray-500 hover:text-white text-sm transition-colors"
+                              >
+                                Editar
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-12 text-center">
+              <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400">Selecciona un evento para ver la asistencia</p>
+            </div>
+          )}
         </div>
       </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg w-full max-w-md">
+          <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg w-full max-w-lg">
             <div className="flex items-center justify-between p-4 border-b border-[#2A2A2A]">
-              <h2 className="text-lg font-semibold text-white">Registrar Asistencia</h2>
+              <h2 className="text-lg font-semibold text-white">
+                {modalType === "incident" ? "Registrar Nueva Salida" : editingAttendance ? "Editar Asistencia" : "Registrar Asistencia"}
+              </h2>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ×
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Bombero *</label>
-                <select name="userId" required className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]">
-                  <option value="">Seleccionar...</option>
-                  {mockUsers.map((user) => (
-                    <option key={user.id} value={user.id}>{user.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Fecha *</label>
-                <input type="date" name="date" required defaultValue="2024-03-27" className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Hora Entrada *</label>
-                  <input type="time" name="entryTime" required className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Hora Salida</label>
-                  <input type="time" name="exitTime" className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Tipo *</label>
-                <select name="type" required className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]">
-                  {attendanceTypes.map((type) => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Notas</label>
-                <textarea name="notes" rows={2} className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]" />
-              </div>
+            <form onSubmit={modalType === "incident" ? handleAddIncident : handleAddAttendance} className="p-4 space-y-4">
+              {modalType === "incident" ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Fecha *</label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Tipo de Emergencia *</label>
+                    <select 
+                      required 
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                    >
+                      <option value="">Seleccionar tipo...</option>
+                      {cbvmEmergencyTypes.map((type) => (
+                        <option key={type.value} value={type.value}>{type.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+                    <textarea 
+                      rows={2}
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                      placeholder="Dirección, detalles del incidente..."
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Hora Salida *</label>
+                      <input 
+                        type="time" 
+                        required 
+                        value={formData.horaSalida}
+                        onChange={(e) => setFormData({ ...formData, horaSalida: e.target.value })}
+                        className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Hora Llegada</label>
+                      <input 
+                        type="time" 
+                        value={formData.horaLlegada}
+                        onChange={(e) => setFormData({ ...formData, horaLlegada: e.target.value })}
+                        className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Clave/Unidad</label>
+                    <select 
+                      value={formData.clave}
+                      onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
+                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                    >
+                      <option value="P1">P1 - M-71</option>
+                      <option value="P2">P2 - M-72</option>
+                      <option value="P3">P3 - M-73</option>
+                      <option value="P4">P4 - UR-3</option>
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {!editingAttendance && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Bombero *</label>
+                      <select 
+                        required
+                        value={formData.bomberId}
+                        onChange={(e) => setFormData({ ...formData, bomberId: e.target.value })}
+                        className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                      >
+                        <option value="">Seleccionar bombero...</option>
+                        {mockBombers.map((bomber) => (
+                          <option key={bomber.id} value={bomber.id}>
+                            {bomber.rank} {bomber.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Código de Asistencia *</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectCode("P")}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          formData.code === "P" 
+                            ? "bg-blue-500/30 border-blue-400 text-blue-400" 
+                            : "bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
+                        }`}
+                      >
+                        <span className="text-xl font-bold">P</span>
+                        <span className="block text-xs mt-1 opacity-70">Fue al lugar</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectCode("PA")}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          formData.code === "PA" 
+                            ? "bg-red-500/30 border-red-400 text-red-400" 
+                            : "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
+                        }`}
+                      >
+                        <span className="text-xl font-bold">P</span>
+                        <span className="block text-xs mt-1 opacity-70">Otras func.</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectCode("A")}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          formData.code === "A" 
+                            ? "bg-blue-500/30 border-blue-400 text-blue-400" 
+                            : "bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
+                        }`}
+                      >
+                        <span className="text-xl font-bold">A</span>
+                        <span className="block text-xs mt-1 opacity-70">Ausente</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectCode("L")}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          formData.code === "L" 
+                            ? "bg-red-500/30 border-red-400 text-red-400" 
+                            : "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
+                        }`}
+                      >
+                        <span className="text-xl font-bold">L</span>
+                        <span className="block text-xs mt-1 opacity-70">Licencia</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectCode("R")}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          formData.code === "R" 
+                            ? "bg-purple-500/30 border-purple-400 text-purple-400" 
+                            : "bg-purple-500/20 border-purple-500/50 text-purple-400 hover:bg-purple-500/30"
+                        }`}
+                      >
+                        <span className="text-xl font-bold">R</span>
+                        <span className="block text-xs mt-1 opacity-70">Reemplazo</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Observaciones</label>
+                    <textarea 
+                      rows={2}
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                      placeholder="Motivo de ausencia, reemplazo, etc."
+                    />
+                  </div>
+                </>
+              )}
               <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button>
-                <button type="submit" disabled={isLoading} className="px-4 py-2 bg-[#C41E3A] hover:bg-[#A01830] text-white rounded-md disabled:opacity-50">
-                  {isLoading ? "Guardando..." : "Registrar"}
+                <button 
+                  type="button" 
+                  onClick={() => { resetForm(); setIsModalOpen(false); }}
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  disabled={modalType === "attendance" && !formData.code}
+                  className="px-4 py-2 bg-[#C41E3A] hover:bg-[#A01830] text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {editingAttendance ? "Actualizar" : "Guardar"}
                 </button>
               </div>
             </form>

@@ -100,6 +100,27 @@ export const vehicleTypes = [
   "Otros",
 ];
 
+export const cbvmEmergencyTypes = [
+  { value: "INCENDIO_ESTRUCTURAL", label: "Incendio Estructural" },
+  { value: "INCENDIO_FORESTAL", label: "Incendio Forestal" },
+  { value: "RESCATE", label: "Rescate" },
+  { value: "SALUD", label: "Salud" },
+  { value: "MATERIALES_PELIGROSOS", label: "Materiales Peligrosos" },
+  { value: "AUXILIO", label: "Auxilio" },
+  { value: "SERVICIO_VARIOS", label: "Servicio Varios" },
+  { value: "CAPACITACION", label: "Capacitación" },
+  { value: "REUNION", label: "Reunión" },
+  { value: "PRACTICA", label: "Práctica" },
+];
+
+export const attendanceCodes = [
+  { value: "P", label: "Presente", color: "blue", bg: "bg-blue-500", description: "Fue al lugar" },
+  { value: "PA", label: "Presente", color: "red", bg: "bg-red-500", description: "Otras funciones" },
+  { value: "A", label: "Ausente", color: "blue", bg: "bg-blue-500", description: "Ausente" },
+  { value: "L", label: "Licencia", color: "red", bg: "bg-red-500", description: "Licencia médica" },
+  { value: "R", label: "Reemplazo", color: "purple", bg: "bg-purple-500", description: "Reemplaza a otro bombero" },
+];
+
 export const attendanceTypes = [
   { value: "REUNION", label: "Reunión" },
   { value: "CAPACITACION", label: "Capacitación" },
