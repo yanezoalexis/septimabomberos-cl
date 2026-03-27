@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { Resend } from "resend";
 
-type Role = "ADMIN" | "BOMBERO";
+type Role = "ADMIN" | "OFICIAL" | "BOMBERO";
 
 declare module "next-auth" {
   interface Session {
@@ -40,6 +41,8 @@ const DEMO_USERS = [
     isActive: true,
   },
 ];
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -95,8 +98,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: "/auth/login",
+    error: "/auth/login",
   },
   session: {
     strategy: "jwt",

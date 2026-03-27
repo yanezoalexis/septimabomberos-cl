@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2, Truck } from "lucide-react";
+import Link from "next/link";
+import { Loader2, Truck, KeyRound } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -95,6 +96,16 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-[#C41E3A] focus:ring-1 focus:ring-[#C41E3A] transition-colors"
                 placeholder="••••••••"
               />
+            </div>
+
+            <div className="flex justify-end">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm text-[#C41E3A] hover:text-[#A01830] flex items-center gap-1 transition-colors"
+              >
+                <KeyRound className="w-4 h-4" />
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
 
             <button
