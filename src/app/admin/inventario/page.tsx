@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Edit, Trash2, X, AlertCircle, Package, Truck, Warehouse, Building2, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Search, Edit, Trash2, X, AlertCircle, Package, Truck, Warehouse, Building2, ChevronDown, ChevronUp, ArrowDown, ArrowUp } from "lucide-react";
 
-type LocationType = "UNIDADES" | "BODEGA" | "CUARTEL" | "ASEO";
+type LocationType = "UNIDADES" | "BODEGA_INFERIOR" | "BODEGA_SUPERIOR" | "CUARTEL";
 type ItemStatus = "NUEVO" | "USADO" | "MAL_ESTADO" | "BAJA";
 type VehicleCode = "M-71" | "M-72" | "M-73" | "UR-3" | "";
 
@@ -19,11 +19,11 @@ interface InventoryItem {
   acquisitionDate: string;
 }
 
-const locationConfig: Record<LocationType, { label: string; icon: typeof Package; color: string }> = {
-  UNIDADES: { label: "Unidades", icon: Truck, color: "text-blue-400" },
-  BODEGA: { label: "Bodega", icon: Warehouse, color: "text-yellow-400" },
-  CUARTEL: { label: "Cuartel", icon: Building2, color: "text-green-400" },
-  ASEO: { label: "Aseo", icon: Sparkles, color: "text-purple-400" },
+const locationConfig: Record<LocationType, { label: string; icon: typeof Package; color: string; description: string }> = {
+  UNIDADES: { label: "Unidades", icon: Truck, color: "text-blue-400", description: "Equipos en vehículos M-71, M-72, M-73, UR-3" },
+  BODEGA_INFERIOR: { label: "Bodega Inferior", icon: ArrowDown, color: "text-yellow-400", description: "Material mayor y equipos pesados" },
+  BODEGA_SUPERIOR: { label: "Bodega Superior", icon: ArrowUp, color: "text-orange-400", description: "Material menor y materiales de aseo" },
+  CUARTEL: { label: "Cuartel", icon: Building2, color: "text-green-400", description: "Equipos en dependencias del cuartel" },
 };
 
 const vehicleUnits = [
@@ -42,21 +42,30 @@ const statusOptions: { value: ItemStatus; label: string; color: string }[] = [
 ];
 
 const initialItems: InventoryItem[] = [
-  { id: "1", name: "Manguera 2.5\"", description: "Manguera de alta presión", quantity: 8, minStock: 4, location: "CUARTEL", status: "NUEVO", acquisitionDate: "2024-01-15" },
+  { id: "1", name: "Manguera 2.5\"", description: "Manguera de alta presión", quantity: 8, minStock: 4, location: "BODEGA_INFERIOR", status: "NUEVO", acquisitionDate: "2024-01-15" },
   { id: "2", name: "Casco de Rescate", description: "Casco táctico", quantity: 4, minStock: 2, location: "UNIDADES", unit: "M-71", status: "USADO", acquisitionDate: "2023-06-20" },
   { id: "3", name: "Chamairo", description: "Overol de protección", quantity: 6, minStock: 3, location: "UNIDADES", unit: "M-72", status: "USADO", acquisitionDate: "2023-03-10" },
   { id: "4", name: "Linterna LED", description: "Linterna táctica 1000 lumens", quantity: 4, minStock: 2, location: "UNIDADES", unit: "M-73", status: "NUEVO", acquisitionDate: "2024-02-01" },
-  { id: "5", name: "Rozadora", description: "Rozadora de emergencia", quantity: 2, minStock: 1, location: "BODEGA", status: "USADO", acquisitionDate: "2022-11-05" },
-  { id: "6", name: "Extractor de Humo", description: "Extractor axial", quantity: 1, minStock: 1, location: "BODEGA", status: "NUEVO", acquisitionDate: "2024-01-20" },
+  { id: "5", name: "Rozadora", description: "Rozadora de emergencia", quantity: 2, minStock: 1, location: "BODEGA_INFERIOR", status: "USADO", acquisitionDate: "2022-11-05" },
+  { id: "6", name: "Extractor de Humo", description: "Extractor axial", quantity: 1, minStock: 1, location: "BODEGA_INFERIOR", status: "NUEVO", acquisitionDate: "2024-01-20" },
   { id: "7", name: "Botiquín Completo", description: "Kit de primeros auxilios", quantity: 3, minStock: 2, location: "CUARTEL", status: "NUEVO", acquisitionDate: "2023-12-01" },
-  { id: "8", name: "Escalera de 10m", description: "Escalera de aluminio", quantity: 2, minStock: 1, location: "CUARTEL", status: "USADO", acquisitionDate: "2022-05-15" },
-  { id: "9", name: "Detergente Industrial", description: "Para limpieza de equipos", quantity: 5, minStock: 3, location: "ASEO", status: "NUEVO", acquisitionDate: "2024-03-01" },
-  { id: "10", name: "Escobillón", description: "Escoba industrial", quantity: 4, minStock: 2, location: "ASEO", status: "USADO", acquisitionDate: "2023-08-20" },
-  { id: "11", name: "Trapeador", description: "Trapeador de cotton", quantity: 6, minStock: 4, location: "ASEO", status: "USADO", acquisitionDate: "2023-08-20" },
-  { id: "12", name: "Guantes de Latex", description: "Guantes descartables caja x100", quantity: 10, minStock: 5, location: "ASEO", status: "NUEVO", acquisitionDate: "2024-02-15" },
+  { id: "8", name: "Escalera de 10m", description: "Escalera de aluminio", quantity: 2, minStock: 1, location: "BODEGA_INFERIOR", status: "USADO", acquisitionDate: "2022-05-15" },
+  { id: "9", name: "Detergente Industrial", description: "Para limpieza de equipos", quantity: 5, minStock: 3, location: "BODEGA_SUPERIOR", status: "NUEVO", acquisitionDate: "2024-03-01" },
+  { id: "10", name: "Escobillón", description: "Escoba industrial", quantity: 4, minStock: 2, location: "BODEGA_SUPERIOR", status: "USADO", acquisitionDate: "2023-08-20" },
+  { id: "11", name: "Trapeador", description: "Trapeador de cotton", quantity: 6, minStock: 4, location: "BODEGA_SUPERIOR", status: "USADO", acquisitionDate: "2023-08-20" },
+  { id: "12", name: "Guantes de Latex", description: "Guantes descartables caja x100", quantity: 10, minStock: 5, location: "BODEGA_SUPERIOR", status: "NUEVO", acquisitionDate: "2024-02-15" },
   { id: "13", name: "Equipo SCBA", description: "Equipo respiración autónoma", quantity: 2, minStock: 2, location: "UNIDADES", unit: "M-71", status: "USADO", acquisitionDate: "2021-06-10" },
-  { id: "14", name: "Manguera 1.5\"", description: "Manguera de ataque", quantity: 6, minStock: 4, location: "BODEGA", status: "NUEVO", acquisitionDate: "2024-01-15" },
-  { id: "15", name: "Hidrolavadora", description: "Para limpieza de unidades", quantity: 1, minStock: 1, location: "ASEO", status: "NUEVO", acquisitionDate: "2023-11-01" },
+  { id: "14", name: "Manguera 1.5\"", description: "Manguera de ataque", quantity: 6, minStock: 4, location: "BODEGA_INFERIOR", status: "NUEVO", acquisitionDate: "2024-01-15" },
+  { id: "15", name: "Hidrolavadora", description: "Para limpieza de unidades", quantity: 1, minStock: 1, location: "BODEGA_SUPERIOR", status: "NUEVO", acquisitionDate: "2023-11-01" },
+  { id: "16", name: "Hacha de Rescate", description: "Hacha de emergencia", quantity: 4, minStock: 2, location: "BODEGA_SUPERIOR", status: "USADO", acquisitionDate: "2020-05-15" },
+  { id: "17", name: "Mascarilla KN95", description: "Caja x50 unidades", quantity: 8, minStock: 5, location: "BODEGA_SUPERIOR", status: "NUEVO", acquisitionDate: "2024-01-10" },
+  { id: "18", name: "Botas de Goma", description: "Botas para zona inundada", quantity: 6, minStock: 3, location: "BODEGA_SUPERIOR", status: "USADO", acquisitionDate: "2022-03-20" },
+  { id: "19", name: "Cortante para Vidrio", description: "Cortador de cristal", quantity: 3, minStock: 2, location: "BODEGA_SUPERIOR", status: "NUEVO", acquisitionDate: "2023-11-05" },
+  { id: "20", name: "Lona de 6x8m", description: "Lona para cubrimiento", quantity: 4, minStock: 2, location: "BODEGA_INFERIOR", status: "USADO", acquisitionDate: "2021-08-10" },
+  { id: "21", name: "Generador Eléctrico", description: "Generador 5000W", quantity: 1, minStock: 1, location: "BODEGA_INFERIOR", status: "NUEVO", acquisitionDate: "2023-06-01" },
+  { id: "22", name: "Radio Handy", description: "Radio de comunicación", quantity: 6, minStock: 4, location: "CUARTEL", status: "USADO", acquisitionDate: "2022-01-15" },
+  { id: "23", name: "Cuaderno de Bitácora", description: "Bitácora de salidas", quantity: 5, minStock: 2, location: "CUARTEL", status: "NUEVO", acquisitionDate: "2024-01-01" },
+  { id: "24", name: "Impresora", description: "Impresora laser", quantity: 1, minStock: 1, location: "CUARTEL", status: "USADO", acquisitionDate: "2022-06-10" },
 ];
 
 export default function InventarioPage() {
@@ -158,7 +167,7 @@ export default function InventarioPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {(Object.keys(locationConfig) as LocationType[]).map((key) => {
           const config = locationConfig[key];
           const Icon = config.icon;
@@ -170,28 +179,29 @@ export default function InventarioPage() {
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
                 isActive
                   ? "border-[#C41E3A] bg-[#C41E3A]/10"
                   : "border-[#2A2A2A] bg-[#1A1A1A] hover:border-[#3A3A3A]"
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mb-2">
                 <div className={`p-2 rounded-lg ${isActive ? "bg-[#C41E3A]/20" : "bg-[#2A2A2A]"}`}>
                   <Icon className={`w-5 h-5 ${isActive ? "text-[#C41E3A]" : config.color}`} />
                 </div>
-                <div className="text-left">
-                  <p className={`text-sm font-medium ${isActive ? "text-white" : "text-gray-400"}`}>
+                <div className="flex-1">
+                  <p className={`text-sm font-bold ${isActive ? "text-white" : "text-gray-300"}`}>
                     {config.label}
                   </p>
-                  <p className="text-xs text-gray-500">{total} items</p>
                 </div>
                 {lowStock > 0 && (
-                  <span className="ml-auto bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full">
                     {lowStock}
                   </span>
                 )}
               </div>
+              <p className="text-xs text-gray-500 line-clamp-2">{config.description}</p>
+              <p className="text-xs text-gray-600 mt-1">{total} items</p>
             </button>
           );
         })}
