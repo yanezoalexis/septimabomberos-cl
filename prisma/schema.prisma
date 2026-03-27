@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  BOMBERO
+}
+
+enum ItemStatus {
+  NUEVO
+  USADO
+  MAL_ESTADO
+  BAJA
+}
+
+enum MaterialStatus {
+  DISPONIBLE
+  ASIGNADO
+  EN_MANTENCION
+  PERDIDO
+}
+
+enum AttendanceType {
+  REUNION
+  CAPACITACION
+  PRACTICA
+  EMERGENCIA
+  GUARDIA
+}
+
+enum VehicleStatus {
+  OPERATIVO
+  MANTENCION
+  FUERA_SERVICIO
+}
+
+enum EventType {
+  REUNION
+  CAPACITACION
+  PRACTICA
+  OTRO
+}
+
+enum SalidaType {
+  EMERGENCIA
+  PRACTICA
+  CAPACITACION
+  OTRO
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String
+  password        String?
+  image           String?
+  role            Role     @default(BOMBERO)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  materialMenor        MaterialMenor[]              @relation("AssignedTo")
+  attendances          Attendance[]
+  bitacoraParticipacion BitacoraSalidaParticipante[]
+  eventosParticipacion CalendarEventParticipante[]
+  auditLogs            AuditLog[]
+}
+
+model InventoryItem {
+  id              String      @id @default(cuid())
+  name            String
+  description     String?
+  category        String
+  quantity        Int         @default(0)
+  minStock        Int         @default(0)
+  location        String?
+  status          ItemStatus  @default(NUEVO)
+  acquisitionDate DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  bitacoraMateriales BitacoraSalidaMaterial[]
+}
+
+model MaterialMenor {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  status      MaterialStatus @default(DISPONIBLE)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTo", fields: [assignedToId], references: [id])
+}
+
+model Attendance {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  date      DateTime       @db.Date
+  entryTime DateTime
+  exitTime  DateTime?
+  type      AttendanceType
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([date])
+}
+
+model BitacoraSalida {
+  id            String      @id @default(cuid())
+  date          DateTime    @db.Date
+  departureTime DateTime
+  returnTime    DateTime?
+  type          SalidaType
+  description   String?
+  location      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  participantes BitacoraSalidaParticipante[]
+  vehiculos     BitacoraSalidaVehiculo[]
+  materiales    BitacoraSalidaMaterial[]
+}
+
+model BitacoraSalidaParticipante {
+  id         String        @id @default(cuid())
+  bitacoraId String
+  bitacora   BitacoraSalida @relation(fields: [bitacoraId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+
+  @@unique([bitacoraId, userId])
+}
+
+model BitacoraSalidaVehiculo {
+  id         String        @id @default(cuid())
+  bitacoraId String
+  bitacora   BitacoraSalida @relation(fields: [bitacoraId], references: [id], onDelete: Cascade)
+  vehicleId  String
+  vehicle    Vehicle       @relation(fields: [vehicleId], references: [id])
+
+  @@unique([bitacoraId, vehicleId])
+}
+
+model BitacoraSalidaMaterial {
+  id         String        @id @default(cuid())
+  bitacoraId String
+  bitacora   BitacoraSalida @relation(fields: [bitacoraId], references: [id], onDelete: Cascade)
+  itemId     String
+  item       InventoryItem @relation(fields: [itemId], references: [id])
+  quantity   Int           @default(1)
+
+  @@unique([bitacoraId, itemId])
+}
+
+model CalendarEvent {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime   @db.Date
+  startTime   DateTime
+  endTime     DateTime?
+  location    String?
+  type        EventType
+  isAllDay    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  participantes CalendarEventParticipante[]
+}
+
+model CalendarEventParticipante {
+  id      String        @id @default(cuid())
+  eventId String
+  event   CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User          @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+}
+
+model Vehicle {
+  id               String        @id @default(cuid())
+  name             String
+  type             String
+  plate            String        @unique
+  status           VehicleStatus @default(OPERATIVO)
+  mileage          Int           @default(0)
+  lastMaintenance  DateTime?
+  nextMaintenance  DateTime?
+  observations     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  bitacoraVehiculos BitacoraSalidaVehiculo[]
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  module    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
