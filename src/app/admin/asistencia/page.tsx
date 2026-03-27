@@ -503,13 +503,33 @@ export default function AsistenciaPage() {
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Fecha *</label>
-                    <input 
-                      type="date" 
-                      required 
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-                    />
+                    <div className="flex gap-2">
+                      <input 
+                        type="date" 
+                        required 
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        className="flex-1 px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, date: new Date().toISOString().split("T")[0] })}
+                        className="px-3 py-2 bg-[#C41E3A]/20 border border-[#C41E3A]/50 text-[#C41E3A] rounded-md hover:bg-[#C41E3A]/30 text-sm"
+                      >
+                        Hoy
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const yesterday = new Date();
+                          yesterday.setDate(yesterday.getDate() - 1);
+                          setFormData({ ...formData, date: yesterday.toISOString().split("T")[0] });
+                        }}
+                        className="px-3 py-2 bg-[#3A3A3A] border border-[#4A4A4A] text-gray-300 rounded-md hover:bg-[#4A4A4A] text-sm"
+                      >
+                        Ayer
+                      </button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
