@@ -23,7 +23,7 @@ export default function LoginPage() {
       const storedUsers = localStorage.getItem("bomb_user_data");
       const parsedUsers = storedUsers ? JSON.parse(storedUsers) : [];
       
-      const res = await fetch("/api/auth/validate", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, storedUsers: parsedUsers }),
@@ -38,7 +38,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("bomberos_session", JSON.stringify(data.user));
-      router.push("/admin");
+      window.location.href = "/admin";
     } catch {
       setError("Error al iniciar sesión");
       setIsLoading(false);
