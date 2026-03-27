@@ -136,9 +136,8 @@ export const incidentKeys = [
   { category: "4", value: "4-9", label: "4-9 Materiales Infectantes" },
   { category: "4", value: "4-10", label: "4-10 Materiales Neurotóxicos" },
   { category: "4", value: "4-11", label: "4-11 Otro" },
-  { category: "5", value: "5-1", label: "5-1 Traslado de Pacientes" },
-  { category: "5", value: "5-2", label: "5-2 Emergencia Médica" },
-  { category: "5", value: "5-3", label: "5-3 Otro" },
+  { category: "5", value: "5-1", label: "5-1 Rescate Vehicular Liviano" },
+  { category: "5", value: "5-2", label: "5-2 Rescate Vehicular Pesado" },
   { category: "6", value: "6-1", label: "6-1 Apoyo Externo" },
   { category: "6", value: "6-2", label: "6-2 Apoyo Interno" },
 ];
