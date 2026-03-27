@@ -261,6 +261,9 @@ export default function AsistenciaPage() {
       "14": "bg-yellow-600/20 text-yellow-600",
       "15": "bg-sky-500/20 text-sky-400",
       "16": "bg-slate-500/20 text-slate-400",
+      "1A": "bg-red-600/30 text-red-300",
+      "2A": "bg-red-700/30 text-red-200",
+      "3A": "bg-red-800/30 text-red-100",
     };
     return colors[type] || "bg-gray-500/20 text-gray-400";
   };
