@@ -583,7 +583,16 @@ export default function AsistenciaPage() {
                         />
                         <button
                           type="button"
-                          onClick={() => { setCalendarDate(formData.date ? new Date(formData.date) : new Date()); setShowCalendar(!showCalendar); }}
+                          onClick={() => { 
+                            if (!formData.date) {
+                              const today = new Date().toISOString().split("T")[0];
+                              setFormData({ ...formData, date: today });
+                              setCalendarDate(new Date());
+                            } else {
+                              setCalendarDate(new Date(formData.date));
+                            }
+                            setShowCalendar(!showCalendar); 
+                          }}
                           className="px-3 py-2 bg-[#C41E3A] hover:bg-[#A01830] text-white rounded-md transition-colors"
                         >
                           <CalendarDays className="w-5 h-5" />
