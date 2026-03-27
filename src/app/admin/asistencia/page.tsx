@@ -286,7 +286,25 @@ export default function AsistenciaPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] text-gray-300 rounded-md hover:bg-[#2A2A2A] transition-colors">
+          <button 
+            onClick={() => {
+              if (!currentIncident) return;
+              const bombero = septimaBombers.map(b => {
+                const att = currentAttendance.find(a => a.bomberId === b.id);
+                return `${b.nro}\t${b.name}\t${att?.code || "-"}\t${att?.notes || "-"}`;
+              }).join("\n");
+              const header = "N°\tBombero\tCódigo\tObservaciones\n";
+              const content = header + bombero;
+              const blob = new Blob([content], { type: "text/plain" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `asistencia_${currentIncident.date}_${currentIncident.clave}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] text-gray-300 rounded-md hover:bg-[#2A2A2A] transition-colors"
+          >
             <Download className="w-4 h-4" />
             Exportar
           </button>
