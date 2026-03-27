@@ -628,23 +628,30 @@ export default function AsistenciaPage() {
                             {dayNames.map(d => <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>)}
                           </div>
                           <div className="grid grid-cols-7 gap-1">
-                            {days.map((day, i) => (
+                            {days.map((day, i) => {
+                              const today = new Date();
+                              const isToday = day && calendarDate.getFullYear() === today.getFullYear() && calendarDate.getMonth() === today.getMonth() && day === today.getDate();
+                              const isSelected = day && formData.date === `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                              return (
                               <button
                                 key={i}
                                 type="button"
                                 disabled={!day}
                                 onClick={() => day && selectDate(day)}
                                 className={`aspect-square flex items-center justify-center rounded text-sm transition-colors ${
-                                  day ? "hover:bg-[#C41E3A]/30 cursor-pointer" : "cursor-default"
+                                  day && !isSelected ? "hover:bg-[#C41E3A]/30 cursor-pointer" : day ? "cursor-default" : "cursor-default"
                                 } ${
-                                  day && formData.date === `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+                                  isSelected
                                     ? "bg-[#C41E3A] text-white"
-                                    : day ? "text-white hover:bg-[#3A3A3A]" : ""
+                                    : isToday
+                                      ? "bg-blue-500/30 text-blue-400 border border-blue-500/50"
+                                      : day ? "text-white hover:bg-[#3A3A3A]" : ""
                                 }`}
                               >
                                 {day}
                               </button>
-                            ))}
+                            );
+                          })}
                           </div>
                         </div>
                       )}
