@@ -135,8 +135,11 @@ export default function AsistenciaPage() {
     setFormData({ ...formData, category, clave: "" });
   };
 
-  const handleAddIncident = (e: React.FormEvent) => {
+  const handleAddIncident = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const categoryLabel = emergencyCategories.find(c => c.value === formData.category)?.label || formData.category;
+    const claveLabel = incidentKeys[formData.category]?.find(k => k.value === formData.clave)?.label || formData.clave;
     
     if (editingIncident) {
       setIncidents(incidents.map(i => 
@@ -144,6 +147,24 @@ export default function AsistenciaPage() {
           ? { ...i, date: formData.date, type: formData.category, description: formData.description, horaSalida: formData.horaSalida, horaLlegada: formData.horaLlegada, clave: formData.clave, lugar: formData.lugar }
           : i
       ));
+      
+      // Enviar email de actualización
+      fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: `Actualización Salida - ${formData.clave}`,
+          module: "Asistencia - Salidas",
+          action: "update",
+          details: `
+            <strong>Fecha:</strong> ${formData.date}<br>
+            <strong>Clave:</strong> ${claveLabel}<br>
+            <strong>Lugar:</strong> ${formData.lugar}<br>
+            <strong>Hora Salida:</strong> ${formData.horaSalida}<br>
+            <strong>Hora Llegada:</strong> ${formData.horaLlegada || "En curso"}
+          `,
+        }),
+      });
     } else {
       const newIncident: IncidentRecord = {
         id: Date.now().toString(),
@@ -157,6 +178,26 @@ export default function AsistenciaPage() {
       };
       setIncidents([newIncident, ...incidents]);
       setSelectedIncident(newIncident.id);
+      
+      // Enviar email de nueva salida
+      fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: `Nueva Salida - ${formData.clave}`,
+          module: "Asistencia - Salidas",
+          action: "create",
+          details: `
+            <strong>Fecha:</strong> ${formData.date}<br>
+            <strong>Clave:</strong> ${claveLabel}<br>
+            <strong>Categoría:</strong> ${categoryLabel}<br>
+            <strong>Lugar:</strong> ${formData.lugar}<br>
+            <strong>Hora Salida:</strong> ${formData.horaSalida}<br>
+            <strong>Hora Llegada:</strong> ${formData.horaLlegada || "En curso"}<br>
+            <strong>Descripción:</strong> ${formData.description || "-"}
+          `,
+        }),
+      });
     }
     resetForm();
     setIsModalOpen(false);
