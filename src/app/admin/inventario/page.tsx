@@ -1,87 +1,106 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Trash2, FileDown, FileSpreadsheet, X, AlertCircle } from "lucide-react";
-import { getStatusColor, getStatusLabel, categories } from "@/lib/utils";
-import { createInventoryItem, updateInventoryItem, deleteInventoryItem } from "@/actions/inventory";
+import { useState } from "react";
+import { Plus, Search, Edit, Trash2, X, AlertCircle, Package, Truck, Warehouse, Building2, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+
+type LocationType = "UNIDADES" | "BODEGA" | "CUARTEL" | "ASEO";
+type ItemStatus = "NUEVO" | "USADO" | "MAL_ESTADO" | "BAJA";
+type VehicleCode = "M-71" | "M-72" | "M-73" | "UR-3" | "";
 
 interface InventoryItem {
   id: string;
   name: string;
-  description: string | null;
-  category: string;
+  description: string;
   quantity: number;
   minStock: number;
-  location: string | null;
-  status: string;
-  acquisitionDate: string | null;
-  createdAt: string;
+  location: string;
+  unit?: string;
+  status: ItemStatus;
+  acquisitionDate: string;
 }
 
+const locationConfig: Record<LocationType, { label: string; icon: typeof Package; color: string }> = {
+  UNIDADES: { label: "Unidades", icon: Truck, color: "text-blue-400" },
+  BODEGA: { label: "Bodega", icon: Warehouse, color: "text-yellow-400" },
+  CUARTEL: { label: "Cuartel", icon: Building2, color: "text-green-400" },
+  ASEO: { label: "Aseo", icon: Sparkles, color: "text-purple-400" },
+};
+
+const vehicleUnits = [
+  { value: "", label: "General" },
+  { value: "M-71", label: "M-71" },
+  { value: "M-72", label: "M-72" },
+  { value: "M-73", label: "M-73" },
+  { value: "UR-3", label: "UR-3" },
+];
+
+const statusOptions: { value: ItemStatus; label: string; color: string }[] = [
+  { value: "NUEVO", label: "Nuevo", color: "bg-green-500/20 text-green-400" },
+  { value: "USADO", label: "Usado", color: "bg-blue-500/20 text-blue-400" },
+  { value: "MAL_ESTADO", label: "Mal Estado", color: "bg-orange-500/20 text-orange-400" },
+  { value: "BAJA", label: "Dado de Baja", color: "bg-red-500/20 text-red-400" },
+];
+
+const initialItems: InventoryItem[] = [
+  { id: "1", name: "Manguera 2.5\"", description: "Manguera de alta presión", quantity: 8, minStock: 4, location: "CUARTEL", status: "NUEVO", acquisitionDate: "2024-01-15" },
+  { id: "2", name: "Casco de Rescate", description: "Casco táctico", quantity: 4, minStock: 2, location: "UNIDADES", unit: "M-71", status: "USADO", acquisitionDate: "2023-06-20" },
+  { id: "3", name: "Chamairo", description: "Overol de protección", quantity: 6, minStock: 3, location: "UNIDADES", unit: "M-72", status: "USADO", acquisitionDate: "2023-03-10" },
+  { id: "4", name: "Linterna LED", description: "Linterna táctica 1000 lumens", quantity: 4, minStock: 2, location: "UNIDADES", unit: "M-73", status: "NUEVO", acquisitionDate: "2024-02-01" },
+  { id: "5", name: "Rozadora", description: "Rozadora de emergencia", quantity: 2, minStock: 1, location: "BODEGA", status: "USADO", acquisitionDate: "2022-11-05" },
+  { id: "6", name: "Extractor de Humo", description: "Extractor axial", quantity: 1, minStock: 1, location: "BODEGA", status: "NUEVO", acquisitionDate: "2024-01-20" },
+  { id: "7", name: "Botiquín Completo", description: "Kit de primeros auxilios", quantity: 3, minStock: 2, location: "CUARTEL", status: "NUEVO", acquisitionDate: "2023-12-01" },
+  { id: "8", name: "Escalera de 10m", description: "Escalera de aluminio", quantity: 2, minStock: 1, location: "CUARTEL", status: "USADO", acquisitionDate: "2022-05-15" },
+  { id: "9", name: "Detergente Industrial", description: "Para limpieza de equipos", quantity: 5, minStock: 3, location: "ASEO", status: "NUEVO", acquisitionDate: "2024-03-01" },
+  { id: "10", name: "Escobillón", description: "Escoba industrial", quantity: 4, minStock: 2, location: "ASEO", status: "USADO", acquisitionDate: "2023-08-20" },
+  { id: "11", name: "Trapeador", description: "Trapeador de cotton", quantity: 6, minStock: 4, location: "ASEO", status: "USADO", acquisitionDate: "2023-08-20" },
+  { id: "12", name: "Guantes de Latex", description: "Guantes descartables caja x100", quantity: 10, minStock: 5, location: "ASEO", status: "NUEVO", acquisitionDate: "2024-02-15" },
+  { id: "13", name: "Equipo SCBA", description: "Equipo respiración autónoma", quantity: 2, minStock: 2, location: "UNIDADES", unit: "M-71", status: "USADO", acquisitionDate: "2021-06-10" },
+  { id: "14", name: "Manguera 1.5\"", description: "Manguera de ataque", quantity: 6, minStock: 4, location: "BODEGA", status: "NUEVO", acquisitionDate: "2024-01-15" },
+  { id: "15", name: "Hidrolavadora", description: "Para limpieza de unidades", quantity: 1, minStock: 1, location: "ASEO", status: "NUEVO", acquisitionDate: "2023-11-01" },
+];
+
 export default function InventarioPage() {
-  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [items, setItems] = useState<InventoryItem[]>(initialItems);
+  const [activeTab, setActiveTab] = useState<LocationType>("UNIDADES");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-
-  useEffect(() => {
-    setItems([
-      { id: "1", name: "Manguera 2.5\"", description: "Manguera de alta presión", category: "Mangueras", quantity: 24, minStock: 10, location: "Cuartel - Estante A", status: "NUEVO", acquisitionDate: "2024-01-15", createdAt: "2024-01-15" },
-      { id: "2", name: "Casco de Rescate", description: "Casco táctico de rescate", category: "Equipos de Protección", quantity: 15, minStock: 5, location: "Cuartel - Estante B", status: "USADO", acquisitionDate: "2023-06-20", createdAt: "2023-06-20" },
-      { id: "3", name: "Motobomba", description: "Motobomba de achique", category: "Herramientas", quantity: 3, minStock: 2, location: "Garaje - Slot 1", status: "NUEVO", acquisitionDate: "2024-02-10", createdAt: "2024-02-10" },
-      { id: "4", name: "Equipo de respiración", description: "SCBA autonomía 45min", category: "Equipos de Rescate", quantity: 8, minStock: 4, location: "Cuartel - Estante C", status: "USADO", acquisitionDate: "2022-11-05", createdAt: "2022-11-05" },
-      { id: "5", name: "Linterna táctica", description: "Linterna LED 1000 lumens", category: "Herramientas", quantity: 12, minStock: 6, location: "Cuartel - Estante B", status: "NUEVO", acquisitionDate: "2024-03-01", createdAt: "2024-03-01" },
-    ]);
-  }, []);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   const filteredItems = items.filter((item) => {
+    const matchesLocation = item.location === activeTab;
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !filterCategory || item.category === filterCategory;
-    const matchesStatus = !filterStatus || item.status === filterStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
+      item.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesUnit = !selectedUnit || item.unit === selectedUnit || (!item.unit && !selectedUnit);
+    return matchesLocation && matchesSearch && matchesUnit;
   });
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+  const groupedByCategory = filteredItems.reduce((acc, item) => {
+    const key = item.unit || "General";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
+    return acc;
+  }, {} as Record<string, InventoryItem[]>);
 
-    const formData = new FormData(e.currentTarget);
-    
-    if (editingItem) {
-      formData.set("id", editingItem.id);
-      const result = await updateInventoryItem(formData);
-      if (result.error) {
-        setError(result.error);
-        setIsLoading(false);
-        return;
-      }
-    } else {
-      const result = await createInventoryItem(formData);
-      if (result.error) {
-        setError(result.error);
-        setIsLoading(false);
-        return;
-      }
-    }
+  const toggleCategory = (key: string) => {
+    setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
-    setIsModalOpen(false);
+  const getStatusInfo = (status: ItemStatus) => statusOptions.find((s) => s.value === status) || statusOptions[0];
+
+  const getTotalByLocation = (location: LocationType) => {
+    return items.filter((item) => item.location === location).length;
+  };
+
+  const getLowStockByLocation = (location: LocationType) => {
+    return items.filter((item) => item.location === location && item.quantity <= item.minStock).length;
+  };
+
+  function openAddModal() {
     setEditingItem(null);
-    setIsLoading(false);
-  }
-
-  async function handleDelete(id: string) {
-    const result = await deleteInventoryItem(id);
-    if (result.success) {
-      setItems(items.filter((item) => item.id !== id));
-    }
-    setDeleteConfirm(null);
+    setIsModalOpen(true);
   }
 
   function openEditModal(item: InventoryItem) {
@@ -89,27 +108,34 @@ export default function InventarioPage() {
     setIsModalOpen(true);
   }
 
-  function exportToPDF() {
-    window.print();
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const itemData: InventoryItem = {
+      id: editingItem?.id || Date.now().toString(),
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      quantity: parseInt(formData.get("quantity") as string) || 0,
+      minStock: parseInt(formData.get("minStock") as string) || 0,
+      location: activeTab,
+      unit: formData.get("unit") as string || undefined,
+      status: formData.get("status") as ItemStatus || "NUEVO",
+      acquisitionDate: formData.get("acquisitionDate") as string || new Date().toISOString().split("T")[0],
+    };
+
+    if (editingItem) {
+      setItems(items.map((item) => (item.id === editingItem.id ? itemData : item)));
+    } else {
+      setItems([...items, itemData]);
+    }
+    setIsModalOpen(false);
+    setEditingItem(null);
   }
 
-  function exportToExcel() {
-    const headers = ["Nombre", "Categoría", "Cantidad", "Stock Mínimo", "Ubicación", "Estado"];
-    const rows = filteredItems.map((item) => [
-      item.name,
-      item.category,
-      item.quantity.toString(),
-      item.minStock.toString(),
-      item.location || "",
-      getStatusLabel(item.status),
-    ]);
-    
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `inventario_${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
+  function handleDelete(id: string) {
+    setItems(items.filter((item) => item.id !== id));
+    setDeleteConfirm(null);
   }
 
   return (
@@ -117,19 +143,58 @@ export default function InventarioPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "Oswald, sans-serif" }}>
-            Inventario General
+            Inventario
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Gestión de materiales y equipos
+            Gestión de materiales por ubicación
           </p>
         </div>
         <button
-          onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+          onClick={openAddModal}
           className="flex items-center gap-2 bg-[#C41E3A] hover:bg-[#A01830] text-white px-4 py-2 rounded-md transition-colors"
         >
           <Plus className="w-4 h-4" />
           Agregar Item
         </button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {(Object.keys(locationConfig) as LocationType[]).map((key) => {
+          const config = locationConfig[key];
+          const Icon = config.icon;
+          const lowStock = getLowStockByLocation(key);
+          const total = getTotalByLocation(key);
+          const isActive = activeTab === key;
+
+          return (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                isActive
+                  ? "border-[#C41E3A] bg-[#C41E3A]/10"
+                  : "border-[#2A2A2A] bg-[#1A1A1A] hover:border-[#3A3A3A]"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${isActive ? "bg-[#C41E3A]/20" : "bg-[#2A2A2A]"}`}>
+                  <Icon className={`w-5 h-5 ${isActive ? "text-[#C41E3A]" : config.color}`} />
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-medium ${isActive ? "text-white" : "text-gray-400"}`}>
+                    {config.label}
+                  </p>
+                  <p className="text-xs text-gray-500">{total} items</p>
+                </div>
+                {lowStock > 0 && (
+                  <span className="ml-auto bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full">
+                    {lowStock}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-4">
@@ -144,129 +209,145 @@ export default function InventarioPage() {
               className="w-full pl-10 pr-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-[#C41E3A]"
             />
           </div>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-          >
-            <option value="">Todas las categorías</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-          >
-            <option value="">Todos los estados</option>
-            <option value="NUEVO">Nuevo</option>
-            <option value="USADO">Usado</option>
-            <option value="MAL_ESTADO">Mal Estado</option>
-            <option value="BAJA">Dado de Baja</option>
-          </select>
-          <div className="flex gap-2">
-            <button
-              onClick={exportToPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] text-gray-300 rounded-md hover:bg-[#2A2A2A] transition-colors"
+          {activeTab === "UNIDADES" && (
+            <select
+              value={selectedUnit}
+              onChange={(e) => setSelectedUnit(e.target.value)}
+              className="px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
             >
-              <FileDown className="w-4 h-4" />
-              PDF
-            </button>
-            <button
-              onClick={exportToExcel}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] border border-[#3A3A3A] text-gray-300 rounded-md hover:bg-[#2A2A2A] transition-colors"
-            >
-              <FileSpreadsheet className="w-4 h-4" />
-              Excel
-            </button>
-          </div>
+              {vehicleUnits.map((unit) => (
+                <option key={unit.value} value={unit.value}>{unit.label}</option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
-      <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#2A2A2A] bg-[#0F0F0F]">
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Nombre</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Categoría</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Cantidad</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Ubicación</th>
-                <th className="text-left text-gray-400 text-sm font-medium py-3 px-4">Estado</th>
-                <th className="text-right text-gray-400 text-sm font-medium py-3 px-4">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredItems.map((item) => (
-                <tr key={item.id} className="border-b border-[#2A2A2A]/50 hover:bg-[#0F0F0F] transition-colors">
-                  <td className="py-3 px-4">
-                    <div>
-                      <p className="text-white text-sm font-medium">{item.name}</p>
-                      {item.description && (
-                        <p className="text-gray-500 text-xs mt-0.5">{item.description}</p>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-gray-400 text-sm">{item.category}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${item.quantity <= item.minStock ? "text-red-400" : "text-white"}`}>
-                        {item.quantity}
-                      </span>
-                      {item.quantity <= item.minStock && (
-                        <AlertCircle className="w-4 h-4 text-red-400" />
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-gray-400 text-sm">{item.location || "-"}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(item.status)}`}>
-                      {getStatusLabel(item.status)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => openEditModal(item)}
-                        className="p-1.5 text-gray-400 hover:text-white hover:bg-[#2A2A2A] rounded transition-colors"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      {deleteConfirm === item.id ? (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="p-1.5 text-red-400 hover:bg-red-500/20 rounded transition-colors"
-                          >
-                            Confirmar
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(null)}
-                            className="p-1.5 text-gray-400 hover:text-white hover:bg-[#2A2A2A] rounded transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setDeleteConfirm(item.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {filteredItems.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No se encontraron items</p>
+      <div className="space-y-4">
+        {Object.entries(groupedByCategory).length === 0 ? (
+          <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-12 text-center">
+            <Package className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-500">No hay items en esta ubicación</p>
+            <button
+              onClick={openAddModal}
+              className="mt-4 text-[#C41E3A] hover:underline"
+            >
+              Agregar el primer item
+            </button>
           </div>
+        ) : (
+          Object.entries(groupedByCategory).map(([category, categoryItems]) => (
+            <div key={category} className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg overflow-hidden">
+              <button
+                onClick={() => toggleCategory(category)}
+                className="w-full flex items-center justify-between p-4 bg-[#0F0F0F] hover:bg-[#151515] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#C41E3A]/20 rounded-lg flex items-center justify-center">
+                    <span className="text-[#C41E3A] font-bold">{categoryItems.length}</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-medium">
+                      {category === "General" ? `Ubicación: ${locationConfig[activeTab].label}` : `Unidad ${category}`}
+                    </p>
+                    <p className="text-gray-500 text-xs">
+                      {categoryItems.reduce((sum, item) => sum + item.quantity, 0)} unidades en total
+                    </p>
+                  </div>
+                </div>
+                {expandedCategories[category] ? (
+                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+
+              {expandedCategories[category] && (
+                <div className="border-t border-[#2A2A2A]">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-[#2A2A2A] bg-[#0F0F0F]/50">
+                        <th className="text-left text-gray-400 text-xs font-medium py-2 px-4">Nombre</th>
+                        <th className="text-left text-gray-400 text-xs font-medium py-2 px-4">Descripción</th>
+                        <th className="text-center text-gray-400 text-xs font-medium py-2 px-4">Cantidad</th>
+                        <th className="text-center text-gray-400 text-xs font-medium py-2 px-4">Mínimo</th>
+                        <th className="text-center text-gray-400 text-xs font-medium py-2 px-4">Estado</th>
+                        <th className="text-right text-gray-400 text-xs font-medium py-2 px-4">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categoryItems.map((item) => {
+                        const statusInfo = getStatusInfo(item.status);
+                        const isLowStock = item.quantity <= item.minStock;
+
+                        return (
+                          <tr key={item.id} className="border-b border-[#2A2A2A]/50 hover:bg-[#0F0F0F]/50 transition-colors">
+                            <td className="py-3 px-4">
+                              <p className="text-white text-sm font-medium">{item.name}</p>
+                            </td>
+                            <td className="py-3 px-4">
+                              <p className="text-gray-400 text-sm">{item.description}</p>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <span className={`text-sm font-bold ${isLowStock ? "text-red-400" : "text-white"}`}>
+                                  {item.quantity}
+                                </span>
+                                {isLowStock && <AlertCircle className="w-4 h-4 text-red-400" />}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="text-gray-500 text-sm">{item.minStock}</span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`px-2 py-1 text-xs rounded-full ${statusInfo.color}`}>
+                                {statusInfo.label}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex justify-end gap-1">
+                                <button
+                                  onClick={() => openEditModal(item)}
+                                  className="p-2 text-gray-400 hover:text-white hover:bg-[#2A2A2A] rounded transition-colors"
+                                  title="Editar"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                {deleteConfirm === item.id ? (
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => handleDelete(item.id)}
+                                      className="px-2 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded"
+                                    >
+                                      Eliminar
+                                    </button>
+                                    <button
+                                      onClick={() => setDeleteConfirm(null)}
+                                      className="p-2 text-gray-400 hover:text-white hover:bg-[#2A2A2A] rounded"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setDeleteConfirm(item.id)}
+                                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                                    title="Eliminar"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ))
         )}
       </div>
 
@@ -275,21 +356,12 @@ export default function InventarioPage() {
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-[#2A2A2A]">
               <h2 className="text-lg font-semibold text-white">
-                {editingItem ? "Editar Item" : "Agregar Item"}
+                {editingItem ? "Editar Item" : `Agregar Item - ${locationConfig[activeTab].label}`}
               </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 text-gray-400 hover:text-white"
-              >
+              <button onClick={() => setIsModalOpen(false)} className="p-1 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {error && (
-              <div className="mx-4 mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-sm">
-                {error}
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
@@ -300,54 +372,45 @@ export default function InventarioPage() {
                   defaultValue={editingItem?.name}
                   required
                   className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                  placeholder="Ej: Manguera 2.5 pulgadas"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
                 <textarea
                   name="description"
-                  defaultValue={editingItem?.description || ""}
+                  defaultValue={editingItem?.description}
                   rows={2}
                   className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                  placeholder="Descripción del item..."
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              {activeTab === "UNIDADES" && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Categoría *</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Unidad</label>
                   <select
-                    name="category"
-                    defaultValue={editingItem?.category}
-                    required
+                    name="unit"
+                    defaultValue={editingItem?.unit || ""}
                     className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                   >
-                    <option value="">Seleccionar...</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
+                    {vehicleUnits.map((unit) => (
+                      <option key={unit.value} value={unit.value}>{unit.label}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Estado</label>
-                  <select
-                    name="status"
-                    defaultValue={editingItem?.status || "NUEVO"}
-                    className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-                  >
-                    <option value="NUEVO">Nuevo</option>
-                    <option value="USADO">Usado</option>
-                    <option value="MAL_ESTADO">Mal Estado</option>
-                    <option value="BAJA">Dado de Baja</option>
-                  </select>
-                </div>
-              </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Cantidad</label>
                   <input
                     type="number"
                     name="quantity"
-                    defaultValue={editingItem?.quantity || 0}
+                    defaultValue={editingItem?.quantity || 1}
                     min="0"
+                    required
                     className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                   />
                 </div>
@@ -356,31 +419,36 @@ export default function InventarioPage() {
                   <input
                     type="number"
                     name="minStock"
-                    defaultValue={editingItem?.minStock || 0}
+                    defaultValue={editingItem?.minStock || 1}
                     min="0"
                     className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                   />
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Ubicación</label>
-                <input
-                  type="text"
-                  name="location"
-                  defaultValue={editingItem?.location || ""}
-                  placeholder="Ej: Cuartel - Estante A"
+                <label className="block text-sm font-medium text-gray-300 mb-1">Estado</label>
+                <select
+                  name="status"
+                  defaultValue={editingItem?.status || "NUEVO"}
                   className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-                />
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Fecha de Adquisición</label>
                 <input
                   type="date"
                   name="acquisitionDate"
-                  defaultValue={editingItem?.acquisitionDate?.split("T")[0] || ""}
+                  defaultValue={editingItem?.acquisitionDate || new Date().toISOString().split("T")[0]}
                   className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                 />
               </div>
+
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
@@ -391,10 +459,9 @@ export default function InventarioPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="px-4 py-2 bg-[#C41E3A] hover:bg-[#A01830] text-white rounded-md transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-[#C41E3A] hover:bg-[#A01830] text-white rounded-md transition-colors"
                 >
-                  {isLoading ? "Guardando..." : editingItem ? "Actualizar" : "Crear"}
+                  {editingItem ? "Actualizar" : "Agregar"}
                 </button>
               </div>
             </form>
