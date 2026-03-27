@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, CalendarDays, Download, Search, AlertCircle } from "lucide-react";
+import { Plus, CalendarDays, Download, Search, AlertCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { emergencyCategories, incidentKeys, attendanceCodes, septimaBombers } from "@/lib/utils";
 
 interface IncidentRecord {
@@ -64,6 +64,32 @@ export default function AsistenciaPage() {
     code: "",
     notes: "",
   });
+
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days: (number | null)[] = [];
+    
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(i);
+    return days;
+  };
+
+  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const dayNames = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"];
+  const days = getDaysInMonth(calendarDate);
+
+  const selectDate = (day: number) => {
+    const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
+    const dateStr = date.toISOString().split("T")[0];
+    setFormData({ ...formData, date: dateStr });
+    setShowCalendar(false);
+  };
 
   const filteredIncidents = useMemo(() => {
     return incidents.filter(i => 
@@ -503,32 +529,82 @@ export default function AsistenciaPage() {
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Fecha *</label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="date" 
-                        required 
-                        value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="flex-1 px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, date: new Date().toISOString().split("T")[0] })}
-                        className="px-3 py-2 bg-[#C41E3A]/20 border border-[#C41E3A]/50 text-[#C41E3A] rounded-md hover:bg-[#C41E3A]/30 text-sm"
-                      >
-                        Hoy
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const yesterday = new Date();
-                          yesterday.setDate(yesterday.getDate() - 1);
-                          setFormData({ ...formData, date: yesterday.toISOString().split("T")[0] });
-                        }}
-                        className="px-3 py-2 bg-[#3A3A3A] border border-[#4A4A4A] text-gray-300 rounded-md hover:bg-[#4A4A4A] text-sm"
-                      >
-                        Ayer
-                      </button>
+                    <div className="relative">
+                      <div className="flex gap-2">
+                        <input 
+                          type="date" 
+                          required 
+                          value={formData.date}
+                          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                          className="flex-1 px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => { setCalendarDate(formData.date ? new Date(formData.date) : new Date()); setShowCalendar(!showCalendar); }}
+                          className="px-3 py-2 bg-[#C41E3A] hover:bg-[#A01830] text-white rounded-md transition-colors"
+                        >
+                          <CalendarDays className="w-5 h-5" />
+                        </button>
+                      </div>
+                      
+                      {showCalendar && (
+                        <div className="absolute top-full left-0 mt-2 z-50 bg-[#1A1A1A] border border-[#3A3A3A] rounded-lg shadow-xl p-4 w-72">
+                          <div className="flex items-center justify-between mb-4">
+                            <button
+                              type="button"
+                              onClick={() => { const d = new Date(calendarDate); d.setMonth(d.getMonth() - 1); setCalendarDate(d); }}
+                              className="p-1 hover:bg-[#3A3A3A] rounded text-gray-400 hover:text-white"
+                            >
+                              <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <div className="text-center">
+                              <select
+                                value={calendarDate.getMonth()}
+                                onChange={(e) => { const d = new Date(calendarDate); d.setMonth(parseInt(e.target.value)); setCalendarDate(d); }}
+                                className="bg-transparent text-white font-medium text-sm focus:outline-none cursor-pointer mr-2"
+                              >
+                                {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                              </select>
+                              <select
+                                value={calendarDate.getFullYear()}
+                                onChange={(e) => { const d = new Date(calendarDate); d.setFullYear(parseInt(e.target.value)); setCalendarDate(d); }}
+                                className="bg-transparent text-white font-medium text-sm focus:outline-none cursor-pointer"
+                              >
+                                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => <option key={y} value={y}>{y}</option>)}
+                              </select>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => { const d = new Date(calendarDate); d.setMonth(d.getMonth() + 1); setCalendarDate(d); }}
+                              className="p-1 hover:bg-[#3A3A3A] rounded text-gray-400 hover:text-white"
+                            >
+                              <ChevronRight className="w-5 h-5" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-7 gap-1 mb-2">
+                            {dayNames.map(d => <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>)}
+                          </div>
+                          <div className="grid grid-cols-7 gap-1">
+                            {days.map((day, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                disabled={!day}
+                                onClick={() => day && selectDate(day)}
+                                className={`aspect-square flex items-center justify-center rounded text-sm transition-colors ${
+                                  day ? "hover:bg-[#C41E3A]/30 cursor-pointer" : "cursor-default"
+                                } ${
+                                  day && formData.date === `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+                                    ? "bg-[#C41E3A] text-white"
+                                    : day ? "text-white hover:bg-[#3A3A3A]" : ""
+                                }`}
+                              >
+                                {day}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
