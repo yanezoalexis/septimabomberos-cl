@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, X, Wrench, Gauge, AlertTriangle, Calendar, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Edit, Trash2, X, Wrench, Gauge, AlertTriangle, Calendar, FileText, ChevronDown, ChevronUp, Settings } from "lucide-react";
 
 function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
@@ -78,8 +78,24 @@ export default function VehiculosPage() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const vehicleData: Vehicle = {
+      id: editingVehicle?.id || Date.now().toString(),
+      name: formData.get("name") as string,
+      type: formData.get("type") as string,
+      plate: formData.get("plate") as string,
+      status: formData.get("status") as string,
+      mileage: parseInt(formData.get("mileage") as string) || 0,
+      lastMaintenance: editingVehicle?.lastMaintenance || null,
+      nextMaintenance: editingVehicle?.nextMaintenance || null,
+      observations: formData.get("observations") as string || null,
+    };
+
     if (editingVehicle) {
-      setVehicles(vehicles.map((v) => (v.id === editingVehicle.id ? { ...editingVehicle } : v)));
+      setVehicles(vehicles.map((v) => (v.id === editingVehicle.id ? vehicleData : v)));
+    } else {
+      setVehicles([...vehicles, vehicleData]);
     }
     setIsModalOpen(false);
     setEditingVehicle(null);
@@ -112,6 +128,15 @@ export default function VehiculosPage() {
 
   function getEventTypeInfo(type: string) {
     return eventTypes.find((t) => t.value === type) || eventTypes[4];
+  }
+
+  function handleQuickStatusChange(vehicleId: string, newStatus: string) {
+    setVehicles(vehicles.map((v) => (v.id === vehicleId ? { ...v, status: newStatus } : v)));
+  }
+
+  function handleEditVehicle(vehicle: Vehicle) {
+    setEditingVehicle(vehicle);
+    setIsModalOpen(true);
   }
 
   return (
@@ -199,10 +224,12 @@ export default function VehiculosPage() {
           return (
             <div key={vehicle.id} className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg overflow-hidden">
               <div
-                className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#0F0F0F] transition-colors"
-                onClick={() => setExpandedVehicle(isExpanded ? null : vehicle.id)}
+                className="flex items-center justify-between p-4 hover:bg-[#0F0F0F] transition-colors"
               >
-                <div className="flex items-center gap-4">
+                <div 
+                  className="flex items-center gap-4 cursor-pointer flex-1"
+                  onClick={() => setExpandedVehicle(isExpanded ? null : vehicle.id)}
+                >
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg ${
                     vehicle.status === "OPERATIVO" ? "bg-green-500/20 text-green-400" :
                     vehicle.status === "MANTENCION" ? "bg-yellow-500/20 text-yellow-400" :
@@ -221,14 +248,42 @@ export default function VehiculosPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={vehicle.status}
+                      onChange={(e) => handleQuickStatusChange(vehicle.id, e.target.value)}
+                      className={`px-3 py-1.5 text-xs rounded-md border focus:outline-none cursor-pointer ${
+                        vehicle.status === "OPERATIVO" 
+                          ? "bg-green-500/20 border-green-500/50 text-green-400" 
+                          : vehicle.status === "MANTENCION"
+                          ? "bg-yellow-500/20 border-yellow-500/50 text-yellow-400"
+                          : "bg-red-500/20 border-red-500/50 text-red-400"
+                      }`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <option value="OPERATIVO">Operativo</option>
+                      <option value="MANTENCION">En Mantención</option>
+                      <option value="FUERA_SERVICIO">Fuera de Servicio</option>
+                    </select>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditVehicle(vehicle);
+                      }}
+                      className="p-2 text-gray-400 hover:text-white hover:bg-[#2A2A2A] rounded-md transition-colors"
+                      title="Editar vehículo"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
+                  </div>
                   <div className="text-right">
                     <p className="text-gray-400 text-xs">{vehicleEvents.length} eventos</p>
                     <p className="text-gray-500 text-xs">registrados</p>
                   </div>
                   {isExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                    <ChevronUp className="w-5 h-5 text-gray-400 cursor-pointer" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                    <ChevronDown className="w-5 h-5 text-gray-400 cursor-pointer" />
                   )}
                 </div>
               </div>
