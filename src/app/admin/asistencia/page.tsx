@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, CalendarDays, Download, ChevronLeft, ChevronRight, Search, AlertCircle } from "lucide-react";
-import { cbvmEmergencyTypes, attendanceCodes } from "@/lib/utils";
+import { Plus, CalendarDays, Download, ChevronLeft, ChevronRight, Search, AlertCircle, Users } from "lucide-react";
+import { cbvmEmergencyTypes, attendanceCodes, septimaBombers, unitKeys } from "@/lib/utils";
 
 interface IncidentRecord {
   id: string;
@@ -12,11 +12,13 @@ interface IncidentRecord {
   horaSalida: string;
   horaLlegada: string;
   clave: string;
+  lugar: string;
 }
 
 interface AttendanceRecord {
   id: string;
   bomberId: string;
+  bomberNro: number;
   bomberName: string;
   incidentId: string;
   code: string;
@@ -30,45 +32,27 @@ interface FormData {
   horaSalida: string;
   horaLlegada: string;
   clave: string;
+  lugar: string;
   bomberId: string;
   code: string;
   notes: string;
 }
 
-const mockBombers = [
-  { id: "1", name: "Carlos Mendoza", rank: "Cabo" },
-  { id: "2", name: "Juan Pérez", rank: "Bombero" },
-  { id: "3", name: "Roberto Sánchez", rank: "Sargento" },
-  { id: "4", name: "Miguel Torres", rank: "Bombero" },
-  { id: "5", name: "Luis Vega", rank: "Cabo" },
-  { id: "6", name: "Pedro Muñoz", rank: "Teniente" },
-  { id: "7", name: "Andrés Lima", rank: "Bombero" },
-  { id: "8", name: "Jorge Castro", rank: "Cabo" },
-];
-
-const mockIncidents = [
-  { id: "1", date: "2024-03-27", type: "INCENDIO_ESTRUCTURAL", description: "Incendio en Av. Valparaíso #456", horaSalida: "14:30", horaLlegada: "17:45", clave: "P3" },
-  { id: "2", date: "2024-03-25", type: "RESCATE", description: "Accidente vehicular Ruta 68", horaSalida: "08:15", horaLlegada: "10:30", clave: "P2" },
-  { id: "3", date: "2024-03-22", type: "CAPACITACION", description: "Capacitación rescate en altura", horaSalida: "09:00", horaLlegada: "13:00", clave: "P1" },
+const mockIncidents: IncidentRecord[] = [
+  { id: "1", date: "2024-03-27", type: "INCENDIO_ESTRUCTURAL", description: "Incendio en Av. Valparaíso #456", horaSalida: "14:30", horaLlegada: "17:45", clave: "1-3", lugar: "Av. Valparaíso #456" },
+  { id: "2", date: "2024-03-25", type: "RESCATE", description: "Accidente vehicular Ruta 68", horaSalida: "08:15", horaLlegada: "10:30", clave: "1-2", lugar: "Ruta 68" },
+  { id: "3", date: "2024-03-22", type: "CAPACITACION", description: "Capacitación rescate en altura", horaSalida: "09:00", horaLlegada: "13:00", clave: "1-1", lugar: "Cuartel Séptima" },
 ];
 
 const mockAttendance: AttendanceRecord[] = [
-  { id: "1", bomberId: "1", bomberName: "Carlos Mendoza", incidentId: "1", code: "P", notes: null },
-  { id: "2", bomberId: "2", bomberName: "Juan Pérez", incidentId: "1", code: "P", notes: null },
-  { id: "3", bomberId: "3", bomberName: "Roberto Sánchez", incidentId: "1", code: "P", notes: null },
-  { id: "4", bomberId: "4", bomberName: "Miguel Torres", incidentId: "1", code: "A", notes: "Fuera de la ciudad" },
-  { id: "5", bomberId: "5", bomberName: "Luis Vega", incidentId: "1", code: "P", notes: null },
-  { id: "6", bomberId: "6", bomberName: "Pedro Muñoz", incidentId: "1", code: "P", notes: null },
-  { id: "7", bomberId: "7", bomberName: "Andrés Lima", incidentId: "1", code: "L", notes: "Licencia médica" },
-  { id: "8", bomberId: "8", bomberName: "Jorge Castro", incidentId: "1", code: "P", notes: null },
-  { id: "9", bomberId: "1", bomberName: "Carlos Mendoza", incidentId: "2", code: "P", notes: null },
-  { id: "10", bomberId: "2", bomberName: "Juan Pérez", incidentId: "2", code: "P", notes: null },
-  { id: "11", bomberId: "3", bomberName: "Roberto Sánchez", incidentId: "2", code: "R", notes: "Reemplaza a Miguel Torres" },
-  { id: "12", bomberId: "4", bomberName: "Miguel Torres", incidentId: "2", code: "A", notes: null },
-  { id: "13", bomberId: "5", bomberName: "Luis Vega", incidentId: "2", code: "P", notes: null },
-  { id: "14", bomberId: "6", bomberName: "Pedro Muñoz", incidentId: "2", code: "P", notes: null },
-  { id: "15", bomberId: "7", bomberName: "Andrés Lima", incidentId: "2", code: "P", notes: null },
-  { id: "16", bomberId: "8", bomberName: "Jorge Castro", incidentId: "2", code: "P", notes: null },
+  { id: "1", bomberId: "7001", bomberNro: 1, bomberName: "Sergio Muñoz Carrasco", incidentId: "1", code: "P", notes: null },
+  { id: "2", bomberId: "7002", bomberNro: 2, bomberName: "Pablo Zavala Cornejo", incidentId: "1", code: "P", notes: null },
+  { id: "3", bomberId: "7003", bomberNro: 3, bomberName: "Jorge Araya Rojas", incidentId: "1", code: "P", notes: null },
+  { id: "4", bomberId: "7004", bomberNro: 4, bomberName: "Leonardo Muñoz Carrasco", incidentId: "1", code: "A", notes: "Fuera de la ciudad" },
+  { id: "5", bomberId: "7053", bomberNro: 54, bomberName: "Felipe Airola de la Fuente", incidentId: "1", code: "P", notes: null },
+  { id: "6", bomberId: "7054", bomberNro: 55, bomberName: "Carlos Huerta Westwood", incidentId: "1", code: "P", notes: null },
+  { id: "7", bomberId: "7055", bomberNro: 56, bomberName: "Mario Suárez González", incidentId: "1", code: "L", notes: "Licencia médica" },
+  { id: "8", bomberId: "7056", bomberNro: 57, bomberName: "Matías Paillamán Flores", incidentId: "1", code: "P", notes: null },
 ];
 
 export default function AsistenciaPage() {
@@ -86,7 +70,8 @@ export default function AsistenciaPage() {
     description: "",
     horaSalida: "",
     horaLlegada: "",
-    clave: "P1",
+    clave: "",
+    lugar: "",
     bomberId: "",
     code: "",
     notes: "",
@@ -112,16 +97,15 @@ export default function AsistenciaPage() {
     const presentAbsence = currentAttendance.filter(a => a.code === "PA").length;
     const absent = currentAttendance.filter(a => a.code === "A").length;
     const license = currentAttendance.filter(a => a.code === "L").length;
-    const total = mockBombers.length;
+    const total = septimaBombers.length;
     return { present, presentAbsence, absent, license, total, rate: total > 0 ? Math.round(((present + presentAbsence) / total) * 100) : 0 };
   }, [currentAttendance]);
 
   const getCodeColor = (code: string) => {
     if (code === "P") return "bg-blue-500/20 text-blue-400 border border-blue-500/30";
     if (code === "PA") return "bg-red-500/20 text-red-400 border border-red-500/30";
-    if (code === "A") return "bg-blue-500/20 text-blue-400 border border-blue-500/30";
-    if (code === "L") return "bg-red-500/20 text-red-400 border border-red-500/30";
-    if (code === "R") return "bg-purple-500/20 text-purple-400 border border-purple-500/30";
+    if (code === "A") return "bg-gray-500/20 text-gray-400 border border-gray-500/30";
+    if (code === "L") return "bg-orange-500/20 text-orange-400 border border-orange-500/30";
     return "bg-gray-500/20 text-gray-400";
   };
 
@@ -139,6 +123,7 @@ export default function AsistenciaPage() {
       horaSalida: formData.horaSalida,
       horaLlegada: formData.horaLlegada,
       clave: formData.clave,
+      lugar: formData.lugar,
     };
     setIncidents([newIncident, ...incidents]);
     setSelectedIncident(newIncident.id);
@@ -148,7 +133,7 @@ export default function AsistenciaPage() {
 
   const handleAddAttendance = (e: React.FormEvent) => {
     e.preventDefault();
-    const bomber = mockBombers.find(b => b.id === formData.bomberId);
+    const bomber = septimaBombers.find(b => b.id === formData.bomberId);
     if (!bomber || !selectedIncident) return;
 
     if (editingAttendance) {
@@ -160,8 +145,9 @@ export default function AsistenciaPage() {
     } else {
       const newAttendance: AttendanceRecord = {
         id: Date.now().toString(),
-        bomberId: formData.bomberId,
-        bomberName: `${bomber.rank} ${bomber.name}`,
+        bomberId: bomber.id,
+        bomberNro: bomber.nro,
+        bomberName: bomber.name,
         incidentId: selectedIncident,
         code: formData.code,
         notes: formData.notes || null,
@@ -179,6 +165,8 @@ export default function AsistenciaPage() {
       bomberId: record.bomberId,
       code: record.code,
       notes: record.notes || "",
+      lugar: "",
+      clave: "",
     });
     setModalType("attendance");
     setIsModalOpen(true);
@@ -191,7 +179,8 @@ export default function AsistenciaPage() {
       description: "",
       horaSalida: "",
       horaLlegada: "",
-      clave: "P1",
+      clave: "",
+      lugar: "",
       bomberId: "",
       code: "",
       notes: "",
@@ -414,13 +403,13 @@ export default function AsistenciaPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockBombers.map((bomber) => {
+                      {septimaBombers.map((bomber) => {
                         const attendance = currentAttendance.find(
                           a => a.bomberId === bomber.id
                         );
                         return (
                           <tr key={bomber.id} className="border-b border-[#2A2A2A]/50 hover:bg-[#0F0F0F]/50">
-                            <td className="py-2 px-3 text-gray-400 text-sm">{bomber.rank}</td>
+                            <td className="py-2 px-3 text-gray-400 text-sm">{bomber.nro}</td>
                             <td className="py-2 px-3 text-white text-sm font-medium">{bomber.name}</td>
                             <td className="py-2 px-3 text-center">
                               {attendance ? (
@@ -538,10 +527,12 @@ export default function AsistenciaPage() {
                       onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
                       className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                     >
-                      <option value="P1">P1 - M-71</option>
-                      <option value="P2">P2 - M-72</option>
-                      <option value="P3">P3 - M-73</option>
-                      <option value="P4">P4 - UR-3</option>
+                      <option value="">Seleccionar unidad...</option>
+                      {unitKeys.map((unit) => (
+                        <option key={unit.value} value={unit.value}>
+                          {unit.label} - {unit.vehicle}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </>
@@ -557,9 +548,9 @@ export default function AsistenciaPage() {
                         className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                       >
                         <option value="">Seleccionar bombero...</option>
-                        {mockBombers.map((bomber) => (
+                        {septimaBombers.map((bomber) => (
                           <option key={bomber.id} value={bomber.id}>
-                            {bomber.rank} {bomber.name}
+                            {bomber.nro} - {bomber.name}
                           </option>
                         ))}
                       </select>
@@ -567,7 +558,7 @@ export default function AsistenciaPage() {
                   )}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Código de Asistencia *</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       <button
                         type="button"
                         onClick={() => handleSelectCode("P")}
@@ -578,7 +569,7 @@ export default function AsistenciaPage() {
                         }`}
                       >
                         <span className="text-xl font-bold">P</span>
-                        <span className="block text-xs mt-1 opacity-70">Fue al lugar</span>
+                        <span className="block text-xs mt-1 opacity-70">Presente</span>
                       </button>
                       <button
                         type="button"
@@ -589,16 +580,16 @@ export default function AsistenciaPage() {
                             : "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
                         }`}
                       >
-                        <span className="text-xl font-bold">P</span>
-                        <span className="block text-xs mt-1 opacity-70">Otras func.</span>
+                        <span className="text-xl font-bold">PA</span>
+                        <span className="block text-xs mt-1 opacity-70">P. Ausente</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleSelectCode("A")}
                         className={`p-3 rounded-lg border text-center transition-all ${
                           formData.code === "A" 
-                            ? "bg-blue-500/30 border-blue-400 text-blue-400" 
-                            : "bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
+                            ? "bg-gray-500/50 border-gray-400 text-gray-300" 
+                            : "bg-gray-500/20 border-gray-500/50 text-gray-400 hover:bg-gray-500/30"
                         }`}
                       >
                         <span className="text-xl font-bold">A</span>
@@ -609,24 +600,12 @@ export default function AsistenciaPage() {
                         onClick={() => handleSelectCode("L")}
                         className={`p-3 rounded-lg border text-center transition-all ${
                           formData.code === "L" 
-                            ? "bg-red-500/30 border-red-400 text-red-400" 
-                            : "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
+                            ? "bg-orange-500/30 border-orange-400 text-orange-400" 
+                            : "bg-orange-500/20 border-orange-500/50 text-orange-400 hover:bg-orange-500/30"
                         }`}
                       >
                         <span className="text-xl font-bold">L</span>
                         <span className="block text-xs mt-1 opacity-70">Licencia</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSelectCode("R")}
-                        className={`p-3 rounded-lg border text-center transition-all ${
-                          formData.code === "R" 
-                            ? "bg-purple-500/30 border-purple-400 text-purple-400" 
-                            : "bg-purple-500/20 border-purple-500/50 text-purple-400 hover:bg-purple-500/30"
-                        }`}
-                      >
-                        <span className="text-xl font-bold">R</span>
-                        <span className="block text-xs mt-1 opacity-70">Reemplazo</span>
                       </button>
                     </div>
                   </div>

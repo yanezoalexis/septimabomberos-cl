@@ -114,11 +114,93 @@ export const cbvmEmergencyTypes = [
 ];
 
 export const attendanceCodes = [
-  { value: "P", label: "Presente", color: "blue", bg: "bg-blue-500", description: "Fue al lugar" },
-  { value: "PA", label: "Presente", color: "red", bg: "bg-red-500", description: "Otras funciones" },
-  { value: "A", label: "Ausente", color: "blue", bg: "bg-blue-500", description: "Ausente" },
-  { value: "L", label: "Licencia", color: "red", bg: "bg-red-500", description: "Licencia médica" },
-  { value: "R", label: "Reemplazo", color: "purple", bg: "bg-purple-500", description: "Reemplaza a otro bombero" },
+  { value: "P", label: "Presente", color: "blue", bg: "bg-blue-500", description: "Presente" },
+  { value: "PA", label: "Presente Ausente", color: "red", bg: "bg-red-500", description: "Presente en otras funciones" },
+  { value: "A", label: "Ausente", color: "gray", bg: "bg-gray-500", description: "Ausente" },
+  { value: "L", label: "Licencia", color: "orange", bg: "bg-orange-500", description: "Licencia médica" },
+];
+
+export const unitKeys = [
+  { value: "1-1", label: "1-1", vehicle: "M-71" },
+  { value: "1-2", label: "1-2", vehicle: "M-72" },
+  { value: "1-3", label: "1-3", vehicle: "M-73" },
+  { value: "4-1", label: "4-1", vehicle: "UR-3" },
+];
+
+export interface Bomber {
+  id: string;
+  nro: number;
+  nroReg: number;
+  name: string;
+  category: string;
+}
+
+export const septimaBombers: Bomber[] = [
+  { id: "7001", nro: 1, nroReg: 7001, name: "Sergio Muñoz Carrasco", category: "Fundadores" },
+  { id: "7002", nro: 2, nroReg: 7002, name: "Pablo Zavala Cornejo", category: "Fundadores" },
+  { id: "7003", nro: 3, nroReg: 7003, name: "Jorge Araya Rojas", category: "Fundadores" },
+  { id: "7004", nro: 4, nroReg: 7004, name: "Leonardo Muñoz Carrasco", category: "Fundadores" },
+  { id: "7005", nro: 5, nroReg: 7005, name: "Jorge Bertrand Román", category: "MHDG" },
+  { id: "7006", nro: 6, nroReg: 7006, name: "Jorge Zavala Cornejo", category: "MHDG" },
+  { id: "7007", nro: 7, nroReg: 7007, name: "Fernando Recio Palma", category: "MHDG" },
+  { id: "7008", nro: 8, nroReg: 7008, name: "Marcelo Villalobos Leiva", category: "MHDG" },
+  { id: "7009", nro: 9, nroReg: 7009, name: "Mauricio Arancibia Segovia", category: "MHDG" },
+  { id: "7010", nro: 10, nroReg: 7010, name: "Carlos Tapia Vargas", category: "MHDG" },
+  { id: "7011", nro: 11, nroReg: 7011, name: "Howard Meinhardt Hall", category: "MHDG" },
+  { id: "7012", nro: 12, nroReg: 7012, name: "Cristian Vera Henriquez", category: "MHDG" },
+  { id: "7013", nro: 13, nroReg: 7013, name: "Andrés Zavala Cornejo", category: "MHDG" },
+  { id: "7014", nro: 14, nroReg: 7014, name: "Alejandro Tapia Vásquez", category: "MHDG" },
+  { id: "7015", nro: 15, nroReg: 7015, name: "Rodrigo Villa Perez", category: "MHDG" },
+  { id: "7016", nro: 16, nroReg: 7016, name: "Mario Camblor Concha", category: "Honorarios del Cuerpo" },
+  { id: "7017", nro: 17, nroReg: 7017, name: "Fernando Lillo Acuña", category: "Honorarios del Cuerpo" },
+  { id: "7018", nro: 18, nroReg: 7018, name: "Iñaki Narvarte Larrondo", category: "Honorarios del Cuerpo" },
+  { id: "7019", nro: 19, nroReg: 7019, name: "Manuel Pérez Vilches", category: "Honorarios del Cuerpo" },
+  { id: "7020", nro: 20, nroReg: 7020, name: "Ricardo Portus Ruiz", category: "Honorarios del Cuerpo" },
+  { id: "7021", nro: 21, nroReg: 7021, name: "Marcelo Vera Valenzuela", category: "Honorarios del Cuerpo" },
+  { id: "7022", nro: 22, nroReg: 7022, name: "Gonzalo Andrade Risso", category: "Honorarios del Cuerpo" },
+  { id: "7023", nro: 23, nroReg: 7023, name: "Axel Biehl Cortes", category: "Honorarios del Cuerpo" },
+  { id: "7024", nro: 24, nroReg: 7024, name: "Alejandro Madrid Montt", category: "Honorarios del Cuerpo" },
+  { id: "7025", nro: 25, nroReg: 7025, name: "Ignacio Morales Barckhahn", category: "Honorarios del Cuerpo" },
+  { id: "7026", nro: 26, nroReg: 7026, name: "Nicolás Marchant Riveros", category: "Honorarios del Cuerpo" },
+  { id: "7027", nro: 27, nroReg: 7027, name: "José Pimentel Padilla", category: "Honorarios del Cuerpo" },
+  { id: "7028", nro: 28, nroReg: 7028, name: "Francisco Navarro Salazar", category: "Honorarios del Cuerpo" },
+  { id: "7029", nro: 29, nroReg: 7029, name: "Sergio Avendaño Orrego", category: "Honorarios del Cuerpo" },
+  { id: "7030", nro: 30, nroReg: 7030, name: "Julio Gutiérrez Córdova", category: "Honorarios del Cuerpo" },
+  { id: "7031", nro: 31, nroReg: 7031, name: "Joel Arenas Binet", category: "Honorarios del Cuerpo" },
+  { id: "7032", nro: 32, nroReg: 7032, name: "Cristian Gómez Varas", category: "Honorarios del Cuerpo" },
+  { id: "7033", nro: 33, nroReg: 7033, name: "Antonio Álvarez Quevedo", category: "Honorarios del Cuerpo" },
+  { id: "7034", nro: 34, nroReg: 7034, name: "Juan Pablo Ruíz-Tagle Díaz", category: "Honorarios del Cuerpo" },
+  { id: "7035", nro: 35, nroReg: 7035, name: "Mauricio Zenteno Rojas", category: "Honorarios del Cuerpo" },
+  { id: "7036", nro: 36, nroReg: 7036, name: "Juan Enrique Zavala Aguilera", category: "Honorarios de Compañía" },
+  { id: "7037", nro: 37, nroReg: 7037, name: "Diego Sobarzo Licandeo", category: "Honorarios de Compañía" },
+  { id: "7038", nro: 38, nroReg: 7038, name: "Rodrigo Flamm Berríos", category: "Honorarios de Compañía" },
+  { id: "7039", nro: 39, nroReg: 7039, name: "Joaquín Pérez Recio", category: "Honorarios de Compañía" },
+  { id: "7040", nro: 40, nroReg: 7040, name: "Pablo Santibáñez Gallardo", category: "Honorarios de Compañía" },
+  { id: "7041", nro: 41, nroReg: 7041, name: "Carlos Rivas Araya", category: "Honorarios de Compañía" },
+  { id: "7042", nro: 42, nroReg: 7042, name: "Ignacio del Fierro Herrera", category: "Honorarios de Compañía" },
+  { id: "7043", nro: 43, nroReg: 7043, name: "Rodrigo Olivares Arenas", category: "Honorarios de Compañía" },
+  { id: "7044", nro: 44, nroReg: 7044, name: "Diego Moreno Ivani", category: "Honorarios de Compañía" },
+  { id: "7045", nro: 45, nroReg: 7045, name: "Alexis Yáñez Osses", category: "Honorarios de Compañía" },
+  { id: "7046", nro: 46, nroReg: 7046, name: "Diego Cea Valencia", category: "Honorarios de Compañía" },
+  { id: "7047", nro: 47, nroReg: 7047, name: "Cristian Romero Godoy", category: "Honorarios de Compañía" },
+  { id: "7048", nro: 48, nroReg: 7048, name: "Marco López Astorga", category: "Honorarios de Compañía" },
+  { id: "7049", nro: 49, nroReg: 7049, name: "José Luis Pizarro Aceituno", category: "Honorarios de Compañía" },
+  { id: "7050", nro: 50, nroReg: 7050, name: "Giampiero Arduini Girotti", category: "Honorarios de Compañía" },
+  { id: "7051", nro: 51, nroReg: 7051, name: "Marcelo Tapia Carrera", category: "Honorarios de Compañía" },
+  { id: "7052", nro: 52, nroReg: 7052, name: "Guillermo Catrón Swinburn", category: "Honorarios de Compañía" },
+  { id: "7053", nro: 54, nroReg: 7053, name: "Felipe Airola de la Fuente", category: "Activos" },
+  { id: "7054", nro: 55, nroReg: 7054, name: "Carlos Huerta Westwood", category: "Activos" },
+  { id: "7055", nro: 56, nroReg: 7055, name: "Mario Suárez González", category: "Activos" },
+  { id: "7056", nro: 57, nroReg: 7056, name: "Matías Paillamán Flores", category: "Activos" },
+  { id: "7057", nro: 58, nroReg: 7057, name: "Hans Torres Cruz", category: "Activos" },
+  { id: "7058", nro: 59, nroReg: 7058, name: "Matías Zambelli Corral", category: "Activos" },
+  { id: "7059", nro: 60, nroReg: 7059, name: "Benjamín Espinoza Cortés", category: "Activos" },
+  { id: "7060", nro: 61, nroReg: 7060, name: "Felipe Rubio Pérez", category: "Activos" },
+  { id: "7061", nro: 62, nroReg: 7061, name: "Franco Olivares Mondaca", category: "Activos" },
+  { id: "7062", nro: 63, nroReg: 7062, name: "Martín Bascur Muñoz", category: "Activos" },
+  { id: "7063", nro: 64, nroReg: 7063, name: "Diego Torres Cerón", category: "Activos" },
+  { id: "7064", nro: 65, nroReg: 7064, name: "Brayan Paredes Sasso", category: "Activos" },
+  { id: "7065", nro: 66, nroReg: 7065, name: "Agustín Wolff Hoepke", category: "Activos" },
 ];
 
 export const attendanceTypes = [
