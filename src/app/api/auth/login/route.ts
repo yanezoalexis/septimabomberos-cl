@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -48,16 +48,6 @@ export async function POST(request: Request) {
         isActive: user.isActive,
       },
     });
-
-    response.cookies.set("bomberos_session", JSON.stringify(user), {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
-    });
-
-    return response;
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });

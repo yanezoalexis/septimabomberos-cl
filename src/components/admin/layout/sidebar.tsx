@@ -115,7 +115,6 @@ export function AdminSidebar() {
             <button
               onClick={() => {
                 localStorage.removeItem("bomberos_session");
-                document.cookie = "bomberos_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                 window.location.href = "/auth/login";
               }}
               className={cn(
