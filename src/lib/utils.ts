@@ -114,10 +114,9 @@ export const cbvmEmergencyTypes = [
 ];
 
 export const incidentKeys = [
-  { category: "1", value: "1-1", label: "1-1 Incendio Estructural" },
-  { category: "1", value: "1-2", label: "1-2 Incendio Estructural Adjunto" },
-  { category: "1", value: "1-3", label: "1-3 Incendio Estructural Industrial" },
-  { category: "1", value: "1-4", label: "1-4 Incendio Estructural Otro" },
+  { category: "1", value: "1-1", label: "1-1 Casa Habitación o Locales Comerciales" },
+  { category: "1", value: "1-2", label: "1-2 Edificios o Edificaciones Antiguas" },
+  { category: "1", value: "1-3", label: "1-3 Estructuras Complejas" },
   { category: "2", value: "2-1", label: "2-1 Incendio Forestal Pastizal" },
   { category: "2", value: "2-2", label: "2-2 Incendio Forestal Basura" },
   { category: "2", value: "2-3", label: "2-3 Incendio Forestal Otro" },
