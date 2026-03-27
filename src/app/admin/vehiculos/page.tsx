@@ -460,10 +460,13 @@ export default function VehiculosPage() {
                     className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                   >
                     <option value="Camión">Camión</option>
-                    <option value="Ambulancia">Ambulancia</option>
+                    <option value="Aljibe">Aljibe</option>
+                    <option value="Escalera">Escalera</option>
                     <option value="Unidad de Rescate">Unidad de Rescate</option>
+                    <option value="Unidad de Reemplazo">Unidad de Reemplazo</option>
                     <option value="Motobomba">Motobomba</option>
                     <option value="Vehículo Ligero">Vehículo Ligero</option>
+                    <option value="Ambulancia">Ambulancia</option>
                   </select>
                 </div>
                 <div>
