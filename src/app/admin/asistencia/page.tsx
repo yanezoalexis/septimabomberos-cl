@@ -502,15 +502,27 @@ export default function AsistenciaPage() {
                               <select
                                 value={bomberAttendance?.code || ""}
                                 onChange={(e) => {
-                                  if (bomberAttendance) {
-                                    if (e.target.value === "") {
-                                      setAttendance(attendance.filter(a => a.id !== bomberAttendance.id));
-                                    } else {
-                                      setAttendance(attendance.map(a => 
-                                        a.id === bomberAttendance.id ? { ...a, code: e.target.value } : a
-                                      ));
+                                  setAttendance(prev => {
+                                    const existing = prev.find(a => a.bomberId === bomber.id && a.incidentId === selectedIncident);
+                                    if (existing) {
+                                      if (e.target.value === "") {
+                                        return prev.filter(a => a.id !== existing.id);
+                                      }
+                                      return prev.map(a => a.id === existing.id ? { ...a, code: e.target.value } : a);
                                     }
-                                  }
+                                    if (e.target.value) {
+                                      return [...prev, {
+                                        id: Date.now().toString(),
+                                        bomberId: bomber.id,
+                                        bomberNro: bomber.nro,
+                                        bomberName: bomber.name,
+                                        incidentId: selectedIncident || "",
+                                        code: e.target.value,
+                                        notes: null,
+                                      }];
+                                    }
+                                    return prev;
+                                  });
                                 }}
                                 className={`px-3 py-1 rounded font-bold border cursor-pointer focus:outline-none ${getCodeColor(bomberAttendance?.code || "")}`}
                               >
@@ -526,11 +538,24 @@ export default function AsistenciaPage() {
                                 type="text"
                                 value={bomberAttendance?.notes || ""}
                                 onChange={(e) => {
-                                  if (bomberAttendance) {
-                                    setAttendance(attendance.map(a => 
-                                      a.id === bomberAttendance.id ? { ...a, notes: e.target.value || null } : a
-                                    ));
-                                  }
+                                  setAttendance(prev => {
+                                    const existing = prev.find(a => a.bomberId === bomber.id && a.incidentId === selectedIncident);
+                                    if (existing) {
+                                      return prev.map(a => a.id === existing.id ? { ...a, notes: e.target.value || null } : a);
+                                    }
+                                    if (e.target.value) {
+                                      return [...prev, {
+                                        id: Date.now().toString(),
+                                        bomberId: bomber.id,
+                                        bomberNro: bomber.nro,
+                                        bomberName: bomber.name,
+                                        incidentId: selectedIncident || "",
+                                        code: "P",
+                                        notes: e.target.value || null,
+                                      }];
+                                    }
+                                    return prev;
+                                  });
                                 }}
                                 placeholder="-"
                                 className="w-full bg-transparent text-gray-400 text-sm focus:outline-none focus:bg-[#0F0F0F] px-1 py-0.5 rounded"
