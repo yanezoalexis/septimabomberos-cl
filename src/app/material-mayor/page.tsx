@@ -1,50 +1,65 @@
-import { Truck, Hammer, Zap, Droplets, CircleDot } from "lucide-react"
+import { Truck, Hammer, Zap, Droplets, CircleDot, Star } from "lucide-react"
 
 export const metadata = {
   title: "Material Mayor | Séptima Compañía de Bomberos Viña del Mar",
-  description: "Conoce nuestras unidades de Material Mayor: Máquina 71, Máquina 72 y Máquina 73.",
+  description: "Conoce nuestras unidades de Material Mayor: M-71, M-72, M-73 y UR-3. Flota operativa especializada para incendios, rescate y emergencias.",
 }
 
 const units = [
   {
-    code: "Máquina 71",
+    code: "M-71",
     name: "Unidad de Rescate en Desnivel",
-    type: "Clase Urban Interfaz 4x4",
+    type: "Urban Interface 4x4",
     details: [
-      "Marca: HME Arhens Fox sobre chassis International 7400",
-      "Motor: MaxxForce 9300cc",
+      "Chasis: HME Arhens Fox sobre International 7400",
+      "Motor: MaxxForce 9300cc - 330 HP",
       "Bomba: Darley JMP (alta y baja presión) 500 GPM",
       "Estanque: 500 galones agua + Espuma",
       "Equipamiento: Escalas correderas, intercomunicadores, radio digital",
       "Capacidad: Doble cabina",
+      "Año: 2015",
     ],
     icon: Truck,
   },
   {
-    code: "Máquina 72",
-    name: "Unidad de Specialty Estructural",
-    type: "Primera intervención",
+    code: "M-72",
+    name: "Unidad de Primera Intervención",
+    type: "Spartan MetroStar",
     details: [
-      "Marca: Renault - Camiva",
-      "Modelo: FPT Midlum 220.13",
-      "Año: [PENDIENTE]",
-      "Equipamiento: Equipos de aire comprimido, escalas",
-      "Material menor de rescate",
+      "Chasis: Spartan MetroStar",
+      "Carrocería: Cuerpo de bomberos",
+      "Equipamiento: Equipos de aire comprimido, escalas, material menor de rescate",
+      "Año: 2024",
+      "Estado: En operación",
     ],
-    icon: Hammer,
+    icon: Star,
+    isNew: true,
   },
   {
-    code: "Máquina 73",
+    code: "M-73",
     name: "Unidad Aljibe",
     type: "Apoyo incendios",
     details: [
       "Chasis: Freightliner M2106",
-      "Capacidad estanque: 8.000 litros",
-      "Bomba: 500 galones por minuto",
+      "Motor: 300 HP",
+      "Capacidad estanque: 8.000 litros (2.100 galones)",
+      "Bomba: Darley 500 GPM",
       "Capacidad tripulación: 3 bomberos",
-      "Descarga rápida",
+      "Año: 2014",
     ],
     icon: Zap,
+  },
+  {
+    code: "UR-3",
+    name: "Unidad de Rescate Urbano",
+    type: "Rescate",
+    details: [
+      "Tipo: Unidad de rescate",
+      "Equipamiento: Herramientas de rescate, equipos de comunicación",
+      "Capacidad: Equipo completo de rescate",
+      "Patrulla de emergencia",
+    ],
+    icon: Hammer,
   },
 ]
 
@@ -60,14 +75,14 @@ export default function MaterialMayor() {
         <section className="bg-gradient-to-br from-rojo-oscuro to-rojo-bombero text-white p-8 rounded-lg mb-12">
           <h2 className="font-heading text-2xl font-bold mb-4">Flota Operativa</h2>
           <p className="text-lg text-gray-200">
-            La Séptima Compañía cuenta con un moderno parque de vehículos especializados, equipados para atender incendios estructurales, forestales y operaciones de rescate en desnivel. Nuestra unidades están dotadas de tecnología de vanguardia para garantizar una respuesta efectiva en emergencias.
+            La Séptima Compañía cuenta con un moderno parque de vehículos especializados, equipados para atender incendios estructurales, forestales y operaciones de rescate en desnivel. Nuestra flota incluye unidades de última generación, incluyendo la nueva M-72 Spartan MetroStar (2024), dotadas de tecnología de vanguardia para garantizar una respuesta efectiva en emergencias.
           </p>
         </section>
 
         <div className="space-y-8">
           {units.map((unit, index) => (
             <div key={index} className="bg-white border-2 border-rojo-bombero rounded-lg overflow-hidden">
-              <div className="bg-rojo-oscuro text-white p-6 flex items-center gap-4 flex-wrap">
+              <div className="bg-rojo-oscuro text-white p-6 flex items-center gap-4 flex-wrap relative">
                 <div className="w-16 h-16 bg-rojo-bombero rounded-lg flex items-center justify-center">
                   <unit.icon className="w-8 h-8" />
                 </div>
@@ -78,6 +93,11 @@ export default function MaterialMayor() {
                 <span className="ml-auto bg-amarillo-seguridad text-rojo-oscuro px-4 py-1 rounded-full font-bold text-sm">
                   {unit.type}
                 </span>
+                {unit.isNew && (
+                  <span className="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded-full font-bold text-xs animate-pulse">
+                    NUEVA
+                  </span>
+                )}
               </div>
               <div className="p-6">
                 <h3 className="font-heading text-lg font-bold text-rojo-oscuro mb-4">Características Técnicas</h3>

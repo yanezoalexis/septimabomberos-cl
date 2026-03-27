@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowRight, Play, Pause } from "lucide-react"
+import { ArrowRight, Play, Pause, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface HeroProps {
@@ -117,6 +117,14 @@ export function Hero({ videoSrc, onVideoReady }: HeroProps) {
               className="inline-flex items-center gap-2 border-2 border-white px-6 py-3 md:px-8 md:py-4 font-bold rounded-md hover:bg-white hover:text-rojo-oscuro transition-colors"
             >
               Nuestra Especialidad
+            </Link>
+            <Link
+              href="/auth/login"
+              className="inline-flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 font-bold rounded-md shadow-lg transition-colors"
+              style={{ backgroundColor: '#FFD700', color: '#1A1A1A' }}
+            >
+              <Lock className="w-5 h-5" />
+              Portal Admin
             </Link>
           </div>
         </div>
