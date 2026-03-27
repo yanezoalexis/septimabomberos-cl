@@ -113,6 +113,24 @@ export const cbvmEmergencyTypes = [
   { value: "PRACTICA", label: "Práctica" },
 ];
 
+export const incidentKeys = [
+  { value: "1-1", label: "1-1 Incendio Estructural" },
+  { value: "1-2", label: "1-2 Incendio Forestal" },
+  { value: "1-3", label: "1-3 Incendio Vario" },
+  { value: "2-1", label: "2-1 Rescate" },
+  { value: "2-2", label: "2-2 Accidente de Tránsito" },
+  { value: "2-3", label: "2-3 Rescate Vario" },
+  { value: "3-1", label: "3-1 Auxilio" },
+  { value: "3-2", label: "3-2 Servicio Vario" },
+  { value: "4-1", label: "4-1 Materiales Peligrosos" },
+  { value: "4-2", label: "4-2 Explosión" },
+  { value: "5-1", label: "5-1 Servicios Varios" },
+  { value: "6-1", label: "6-1 Emergencia Médicas (E.M.)" },
+  { value: "6-2", label: "6-2 Traslado de Pacientes" },
+  { value: "7-1", label: "7-1 Apoyo" },
+  { value: "8-1", label: "8-1 Others" },
+];
+
 export const attendanceCodes = [
   { value: "P", label: "Presente", color: "blue", bg: "bg-blue-500", description: "Presente" },
   { value: "PA", label: "Presente Ausente", color: "red", bg: "bg-red-500", description: "Presente en otras funciones" },

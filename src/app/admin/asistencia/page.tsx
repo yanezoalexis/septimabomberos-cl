@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Plus, CalendarDays, Download, ChevronLeft, ChevronRight, Search, AlertCircle, Users } from "lucide-react";
-import { cbvmEmergencyTypes, attendanceCodes, septimaBombers, unitKeys } from "@/lib/utils";
+import { cbvmEmergencyTypes, attendanceCodes, septimaBombers, incidentKeys } from "@/lib/utils";
 
 interface IncidentRecord {
   id: string;
@@ -521,16 +521,16 @@ export default function AsistenciaPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Clave/Unidad</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Clave</label>
                     <select 
                       value={formData.clave}
                       onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
                       className="w-full px-3 py-2 bg-[#0F0F0F] border border-[#3A3A3A] rounded-md text-white focus:outline-none focus:border-[#C41E3A]"
                     >
-                      <option value="">Seleccionar unidad...</option>
-                      {unitKeys.map((unit) => (
-                        <option key={unit.value} value={unit.value}>
-                          {unit.label} - {unit.vehicle}
+                      <option value="">Seleccionar clave...</option>
+                      {incidentKeys.map((key) => (
+                        <option key={key.value} value={key.value}>
+                          {key.label}
                         </option>
                       ))}
                     </select>
