@@ -1,15 +1,30 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { Bell, User, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 
+interface SessionUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  isActive: boolean;
+}
+
 export function AdminHeader() {
-  const { data: session } = useSession();
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     document.documentElement.classList.add("dark");
+    const sessionData = localStorage.getItem("bomberos_session");
+    if (sessionData) {
+      try {
+        setUser(JSON.parse(sessionData));
+      } catch {
+        setUser(null);
+      }
+    }
   }, []);
 
   const toggleDarkMode = () => {
@@ -22,7 +37,7 @@ export function AdminHeader() {
       <div className="flex items-center gap-4 lg:pl-0 pl-12">
         <div>
           <h2 className="text-white font-semibold">
-            Bienvenido, {session?.user?.name || "Usuario"}
+            Bienvenido, {user?.name || "Usuario"}
           </h2>
           <p className="text-gray-500 text-xs">
             {new Date().toLocaleDateString("es-CL", {
@@ -53,9 +68,9 @@ export function AdminHeader() {
             <User className="w-5 h-5 text-white" />
           </div>
           <div className="hidden md:block">
-            <p className="text-white text-sm font-medium">{session?.user?.name}</p>
+            <p className="text-white text-sm font-medium">{user?.name}</p>
             <p className="text-gray-500 text-xs">
-              {session?.user?.role === "ADMIN" ? "Administrador" : "Bombero"}
+              {user?.role === "ADMIN" ? "Administrador" : "Bombero"}
             </p>
           </div>
         </div>
