@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Oswald, Source_Sans_3, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
-import { Navigation, EmergencyBanner } from "@/components/Navigation"
-import { Footer } from "@/components/Footer"
-import { Analytics } from "@vercel/analytics/react"
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -92,13 +89,7 @@ export default function RootLayout({
         >
           Saltar al contenido principal
         </a>
-        <EmergencyBanner />
-        <Navigation />
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        <Analytics />
+        {children}
       </body>
     </html>
   )
